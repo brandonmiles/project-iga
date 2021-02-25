@@ -1,15 +1,22 @@
-import pandas
+from score_model import ScoreModel
+
+import pandas as pd
 import spellcheck
 
 spell = spellcheck.SpellCheck('../data/exceptions.tsv')
 
 try:
-    data = pandas.read_csv('../data/test_set.tsv', sep='\t')
-    # table column names are "essay_id", "essay_set", "essay", "domain1_predictionid", "domain2_predictionid"
+	test_data = pd.read_csv('../data/test_set.tsv', sep='\t', encoding='ISO-8859-1')
+	# Table column names are "essay_id", "essay_set", "essay", "domain1_predictionid", "domain2_predictionid"
 
-    for i in range(len(data['essay'])):
-        number, errors = spell.number_of_errors(data['essay'][i])
-        print("Essay: ", i, " Errors: ", number)
-        print(errors)
+	# Uncomment if you want to run the model.
+	#model = ScoreModel()
+	#model.train_and_test('../data/training_set.tsv')
+
+	for i in range(len(test_data['essay'])):
+		number, errors = spell.number_of_errors(test_data['essay'][i])
+		print("Essay: ", i, " Errors: ", number)
+		print(errors)
+
 except FileNotFoundError:
-    print("File does not exist")
+	print("File does not exist")
