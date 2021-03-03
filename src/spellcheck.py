@@ -9,13 +9,14 @@ englishStop = set(stopwords.words('english'))
 
 
 class SpellCheck:
-    punctuation = {'.', ',', '?', '!', '>', '<', '/', '\'', '\'\'', '\"', ':', ';', '+', '=', '_', '*', '&', '(',
-                   ')', '~', '`'}  # Feel free to add to alter the list of allowable punctuation
+    punctuation = {}
     exceptions = pandas.DataFrame({'token': [], 'token_type': []})
     file_name = ''
 
-    def __init__(self, file_name):  # Initialize with the exception file known
+    def __init__(self, file_name, punctuation_list):  # Initialize with the exception file known
         self.file_name = file_name
+        self.punctuation = punctuation_list
+
         try:
             self.exceptions = pandas.read_csv(file_name, sep='\t')
         except FileNotFoundError:
@@ -52,13 +53,12 @@ class SpellCheck:
 
     # Need not only the word, but also what the word is, i.e. a noun, verb, etc.
     def add_exception(self, word, token_type):
-        if word.lower() in self.exceptions:
+        if word.lower() in self.exceptions['token']:
             return True
         try:
             new_row = {'token': word.lower(), 'token_type': token_type}
-            exception_data = self.exceptions.append(new_row, ignore_index=True)
-            print(exception_data)
-            exception_data.to_csv(self.file_name, index=False, sep="\t", na_rep='', header=True, mode='w', decimal='.')
+            self.exceptions = self.exceptions.append(new_row, ignore_index=True)
+            self.exceptions.to_csv(self.file_name, index=False, sep="\t", na_rep='', header=True, mode='w', decimal='.')
         except FileNotFoundError:
             return False
         return True
