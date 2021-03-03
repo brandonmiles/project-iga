@@ -4,19 +4,23 @@ import language_tool_python
 tool = language_tool_python.LanguageTool('en-US')
 
 
-class GrammarCheck:
+def number_of_errors(text):
+    pair = []
 
-    def number_of_errors(self):
-        count = 0
-        mistakes = []
-        corrections = []
+    matches = tool.check(text)
 
-        matches = tool.check(self)
-        count = len(matches)
+    for rules in matches:
+        if len(rules.replacements) > 0:
+            pair.append((text[rules.offset:rules.errorLength + rules.offset], rules.replacements[0]))
 
-        for rules in matches:
-            if len(rules.replacements) > 0:
-                mistakes.append(self[rules.offset:rules.errorLength + rules.offset])
-                corrections.append(rules.replacements[0])
+    text = tool.correct(text)
+    matches = tool.check(text)
 
-        return count, mistakes, corrections
+    for rules in matches:
+        if len(rules.replacements) > 0:
+            pair.append((text[rules.offset:rules.errorLength + rules.offset], rules.replacements[0]))
+
+    text = tool.correct(text)
+
+    return pair, text
+
