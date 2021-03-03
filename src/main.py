@@ -1,10 +1,9 @@
 # from score_model import ScoreModel
 import pandas as pd
-import grammar_check
-import keywords
+import grade
 
 
-words = keywords.KeyWords('../data/dictionary.tsv')
+g = grade.Grade('../data/dictionary.tsv', 1, 1, 5)
 
 try:
     test_data = pd.read_csv('../data/test_set.tsv', sep='\t', encoding='ISO-8859-1')
@@ -15,11 +14,8 @@ try:
     # model.train_and_test('../data/training_set.tsv')
 
     # Grammar Check
-    for i in range(len(test_data['essay'])):
-        corrections, corrected_text = grammar_check.number_of_errors(test_data['essay'][i])
-        print("Essay: ", i, "Errors: ", len(corrections))
-        print(corrections)
-        print(words.occurrence(corrected_text))
+    for i in test_data['essay']:
+        g.get_grade(i)
 
 except FileNotFoundError:
     print("File does not exist")
