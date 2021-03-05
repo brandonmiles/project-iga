@@ -3,11 +3,12 @@ from keras.layers import LSTM, Dense, Dropout
 from gensim.models import KeyedVectors
 from keras.models import Sequential
 from preprocessing import Preprocessing
-from score_model_helper import ScoreModelHelper
+import score_model_helper
 from sklearn.model_selection import KFold
 from sklearn.metrics import cohen_kappa_score
 
 import numpy as np
+
 
 # This class contains the model for scoring the essay, and includes functions
 # for setting up and training the model.
@@ -35,9 +36,14 @@ class ScoreModel:
         cv = KFold(n_splits=5, shuffle=True)
         results = []  # Cohen's kappa scores
         y_pred_list = []  # Actual predicted scores
+<<<<<<< HEAD
         model = None
 
         x = ScoreModelHelper.get_dataframe(data_loc)
+=======
+
+        x = score_model_helper.get_dataframe(data_loc)
+>>>>>>> 347d22261265d01a7071a3c457f3b5540a7ea53b
         y = x['domain1_score']  # Scores from train data
 
         count = 1
@@ -49,7 +55,11 @@ class ScoreModel:
             test_essays = x_test['essay']
 
             # Grabs all the sentences from every essay; setting up for Word2Vec
+<<<<<<< HEAD
             sentences = ScoreModelHelper.get_sentences(train_essays)
+=======
+            sentences = score_model_helper.get_sentences(train_essays)
+>>>>>>> 347d22261265d01a7071a3c457f3b5540a7ea53b
 
             # Parameters for Word2Vec model
             num_features = 300
@@ -63,22 +73,39 @@ class ScoreModel:
             model = Word2Vec(sentences, workers=num_workers, size=num_features, min_count=min_word_count,
                              window=context, sample=downsampling)
             model.init_sims(replace=True)
+<<<<<<< HEAD
 
             # Preprocesses each essay into a word list
             clean_train_essays = ScoreModelHelper.get_clean_essays(train_essays)
             clean_test_essays = ScoreModelHelper.get_clean_essays(test_essays)
+=======
+            # model.wv.save_word2vec_format('word2vecmodel.bin', binary=True)
+
+            # Preprocesses each essay into a word list
+            clean_train_essays = score_model_helper.get_clean_essays(train_essays)
+            clean_test_essays = score_model_helper.get_clean_essays(test_essays)
+>>>>>>> 347d22261265d01a7071a3c457f3b5540a7ea53b
 
             # Preprocess the essays some more
             train_data_vecs = Preprocessing.get_avg_feature_vecs(clean_train_essays, model, num_features)
             test_data_vecs = Preprocessing.get_avg_feature_vecs(clean_test_essays, model, num_features)
 
             # Turns vectors into np arrays and reshapes them into their proper shape
+<<<<<<< HEAD
             train_data_vecs = ScoreModelHelper.array_and_reshape(train_data_vecs)
             test_data_vecs = ScoreModelHelper.array_and_reshape(test_data_vecs)
+=======
+            train_data_vecs = score_model_helper.array_and_reshape(train_data_vecs)
+            test_data_vecs = score_model_helper.array_and_reshape(test_data_vecs)
+>>>>>>> 347d22261265d01a7071a3c457f3b5540a7ea53b
 
             # Train LSTM model
             lstm_model = self.get_model()
             lstm_model.fit(train_data_vecs, y_train, batch_size=64, epochs=2)
+<<<<<<< HEAD
+=======
+            # lstm_model.load_weights('./model_weights/final_lstm.h5')
+>>>>>>> 347d22261265d01a7071a3c457f3b5540a7ea53b
 
             # Test LSTM model on 'test data'
             y_pred = lstm_model.predict(test_data_vecs)
@@ -86,8 +113,13 @@ class ScoreModel:
             y_pred_list.append(y_pred)
 
             # Save any one of the 5 models
+<<<<<<< HEAD
             if count == 5:
             	lstm_model.save('./model_weights/final_lstm.h5')
+=======
+            # if count == 5:
+            # lstm_model.save('./model_weights/final_lstm.h5')
+>>>>>>> 347d22261265d01a7071a3c457f3b5540a7ea53b
 
             # Evaluate the model on the evaluation metric, "quadratic mean averaged kappa"
             result = cohen_kappa_score(y_test.values, y_pred, weights='quadratic')
@@ -95,6 +127,7 @@ class ScoreModel:
             results.append(result)
 
             count += 1
+<<<<<<< HEAD
 
     def evaluate(self, essay):
     	tk = ScoreModelHelper.load_tokenizer()
@@ -127,3 +160,5 @@ class ScoreModel:
     	or community place. Now I hope you have reached a point to understand and agree with me, because computers can\
     	have great effects on you or child because it gives us time to chat with friends/new people, helps us learn\
     	about the globe and believe or not keeps us out of troble. Thank you for listening.'))
+=======
+>>>>>>> 347d22261265d01a7071a3c457f3b5540a7ea53b
