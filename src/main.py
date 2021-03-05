@@ -13,8 +13,8 @@ try:
     # Table column names are "essay_id", "essay_set", "essay", "domain1_predictionid", "domain2_predictionid"
 
     # Uncomment if you want to run the model.
-    # model = ScoreModel()
-    # model.train_and_test('../data/training_set.tsv')
+    model = ScoreModel()
+    model.train_and_test('../data/training_set.tsv')
 
     # Grade each essay
     a = 0

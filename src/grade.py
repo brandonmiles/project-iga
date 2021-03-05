@@ -5,10 +5,6 @@ import feedback
 
 
 class Grade:
-    words = keywords.KeyWords
-    rubric = {}
-    weights = {}
-
     def __init__(self, dictionary_path, rubric_list, weight_list):
         self.rubric = rubric_list
         self.weights = weight_list

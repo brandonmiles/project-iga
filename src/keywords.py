@@ -2,16 +2,13 @@ import pandas
 
 
 class KeyWords:
-    file_name = ''
-    kw = pandas.DataFrame({'words': []})
-
     def __init__(self, file_name):  # Initialize with the dictionary file known
         self.file_name = file_name
 
         try:
             self.kw = pandas.read_csv(file_name, sep='\t')
         except FileNotFoundError:
-            print("Can't find ", file_name)
+            print("File not found")
 
     # Given text, return a tuple of lists that contain the keywords and their occurrences
     def occurrence(self, text):
