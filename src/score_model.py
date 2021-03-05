@@ -38,16 +38,16 @@ class ScoreModel:
         y_pred_list = []  # Actual predicted scores
         model = None
 
-        x = ScoreModelHelper.get_dataframe(data_loc)
-        y = ['domain1_score']  # Scores from train data
+        X = ScoreModelHelper.get_dataframe(data_loc)
+        y = X['domain1_score']  # Scores from train data
 
         count = 1
-        for traincv, testcv in cv.split(x):
+        for traincv, testcv in cv.split(X):
             print("\n--------Fold {}--------\n".format(count))
-            x_test, x_train, y_test, y_train = x.iloc[testcv], x.iloc[traincv], y.iloc[testcv], y.iloc[traincv]
+            X_test, X_train, y_test, y_train = X.iloc[testcv], X.iloc[traincv], y.iloc[testcv], y.iloc[traincv]
 
-            train_essays = x_train['essay']
-            test_essays = x_test['essay']
+            train_essays = X_train['essay']
+            test_essays = X_test['essay']
 
             # Grabs all the sentences from every essay; setting up for Word2Vec
             sentences = ScoreModelHelper.get_sentences(train_essays)
@@ -69,10 +69,6 @@ class ScoreModel:
             clean_train_essays = ScoreModelHelper.get_clean_essays(train_essays)
             clean_test_essays = ScoreModelHelper.get_clean_essays(test_essays)
 
-            # Preprocesses each essay into a word list
-            clean_train_essays = score_model_helper.get_clean_essays(train_essays)
-            clean_test_essays = score_model_helper.get_clean_essays(test_essays)
-
             # Preprocess the essays some more
             train_data_vecs = Preprocessing.get_avg_feature_vecs(clean_train_essays, model, num_features)
             test_data_vecs = Preprocessing.get_avg_feature_vecs(clean_test_essays, model, num_features)
@@ -80,10 +76,7 @@ class ScoreModel:
             # Turns vectors into np arrays and reshapes them into their proper shape
             train_data_vecs = ScoreModelHelper.array_and_reshape(train_data_vecs)
             test_data_vecs = ScoreModelHelper.array_and_reshape(test_data_vecs)
-
-            train_data_vecs = ScoreModelHelper.array_and_reshape(train_data_vecs)
-            test_data_vecs = ScoreModelHelper.array_and_reshape(test_data_vecs)
-
+            
             # Train LSTM model
             lstm_model = self.get_model()
             lstm_model.fit(train_data_vecs, y_train, batch_size=64, epochs=2)

@@ -10,7 +10,7 @@ weights = {'Grammar': 1, 'Key': 10, 'Key_Min': 2}
 g = grade.Grade('../data/dictionary.tsv', rubric, weights)
 
 try:
-    test_data = pd.read_csv('../data/test_set.tsv', sep='\t', encoding='ISO-8859-1')
+    #test_data = pd.read_csv('../data/test_set.tsv', sep='\t', encoding='ISO-8859-1')
     # Table column names are "essay_id", "essay_set", "essay", "domain1_predictionid", "domain2_predictionid"
 
     # Uncomment if you want to run the model.
