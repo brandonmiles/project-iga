@@ -1,7 +1,10 @@
+from keras.preprocessing.sequence import pad_sequences
+from nltk.tokenize import word_tokenize
 from preprocessing import Preprocessing
 
 import numpy as np
 import pandas as pd
+import pickle
 
 # This class contains some of the helper functions used in the Model 
 # class.
@@ -38,3 +41,15 @@ class ScoreModelHelper:
 		data_vecs = np.array(data_vecs)
 		data_vecs = np.reshape(data_vecs, (data_vecs.shape[0], 1, data_vecs.shape[1]))
 		return data_vecs
+
+	def load_tokenizer():
+		with open('tokenizer/tokenizer.pickle', 'rb') as handle:
+			tokenizer = pickle.load(handle)
+		return tokenizer
+
+	# This is for the evaluation function. Partial credit: yetianpro on GitHub
+	def preprocess(text_raw, tk):
+		text_tokenized = word_tokenize(text_raw)
+		text_encoded = tk.texts_to_sequences([text_tokenized])
+		text_array = pad_sequences(text_encoded, maxlen=300, padding='post')
+		return text_array
