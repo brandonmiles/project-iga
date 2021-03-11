@@ -14,12 +14,14 @@ class Format:
     # Open the docx as a series of xml files
     def __init__(self, file_name):
         try:
+            # Opening up the needed xml documents
             file_tree = zipfile.ZipFile(file_name)
             self.document = xml.etree.ElementTree.XML(file_tree.read('word/document.xml'))
             self.font = xml.etree.ElementTree.XML(file_tree.read('word/fontTable.xml'))
             general = xml.etree.ElementTree.XML(file_tree.read('docProps/app.xml'))
             style = xml.etree.ElementTree.XML(file_tree.read('word/styles.xml'))
 
+            # Saving these values for later so we don't need to keep general
             self.word_count = int(general.find(WORD_PROPERTIES + 'Words').text)
             self.page_count = int(general.find(WORD_PROPERTIES + 'Pages').text)
 
@@ -34,9 +36,12 @@ class Format:
             size = rPr.find(WORD_NAMESPACE + 'sz').attrib[WORD_NAMESPACE + 'val']
             line = pPr.find(WORD_NAMESPACE + 'spacing').attrib[WORD_NAMESPACE + 'line']
             after = pPr.find(WORD_NAMESPACE + 'spacing').attrib[WORD_NAMESPACE + 'after']
+
+            # Odds are, before paragraph line spacing doesn't exist, but a necessary countermeasure
             before = '0'
             if WORD_NAMESPACE + 'before' in pPr.keys():
                 before = pPr.find(WORD_NAMESPACE + 'spacing').attrib[WORD_NAMESPACE + 'before']
+
             pgSzW = secPr.find(WORD_NAMESPACE + 'pgSz').attrib[WORD_NAMESPACE + 'w']
             pgSzH = secPr.find(WORD_NAMESPACE + 'pgSz').attrib[WORD_NAMESPACE + 'h']
             pgMarLeft = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'left']
@@ -47,6 +52,7 @@ class Format:
             footer = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'footer']
             gutter = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'gutter']
 
+            # Saving all these values as an easy to access dictionary
             self.default_style = {'font': font, 'size': int(size) / 2, 'line_spacing': int(line) / 240,
                                   'after_spacing': int(after) / 20, 'before_spacing': int(before) / 20,
                                   'page_width': int(pgSzW) / 1440, 'page_height': int(pgSzH) / 1440,
@@ -137,16 +143,18 @@ class Format:
 
         # Check every paragraph
         for p in paragraphs.iter(WORD_NAMESPACE + 'p'):
-            paragraph_number = paragraph_number + 1
+            paragraph_number += 1
             pPr = p.find(WORD_NAMESPACE + 'pPr')
             if pPr is not None:
                 ind = pPr.find(WORD_NAMESPACE + 'ind')
-                if WORD_NAMESPACE + 'firstLine' in ind.keys():
-                    if int(ind.attrib[WORD_NAMESPACE + 'firstLine']) == 720:
-                        indent = indent + 1
-                    else:
-                        if int(ind.attrib[WORD_NAMESPACE + 'firstLine']) != 0:
-                            indent = indent + 0.5
+                if ind is not None:
+                    if WORD_NAMESPACE + 'firstLine' in ind.keys():
+                        # 720 is equal to half an inch, the correct standard indent length
+                        if int(ind.attrib[WORD_NAMESPACE + 'firstLine']) == 720:
+                            indent += 1
+                        else:
+                            if int(ind.attrib[WORD_NAMESPACE + 'firstLine']) != 0:
+                                indent += 0.5
 
             return indent / paragraph_number
 
@@ -159,21 +167,23 @@ class Format:
 
         # Check every paragraph
         for p in paragraphs.iter(WORD_NAMESPACE + 'p'):
-            paragraph_number = paragraph_number + 1
+            paragraph_number += 1
             pPr = p.find(WORD_NAMESPACE + 'pPr')
 
             # Assume default unless otherwise stated
             if pPr is not None:
                 ind = pPr.find(WORD_NAMESPACE + 'ind')
-                if WORD_NAMESPACE + 'left' in ind.keys():
-                    if int(ind.attrib[WORD_NAMESPACE + 'left']) != 0:
-                        margin = margin + 1
-                if WORD_NAMESPACE + 'right' in ind.keys():
-                    if int(ind.attrib[WORD_NAMESPACE + 'right']) != 0:
-                        margin = margin + 1
+                if ind is not None:
+                    if WORD_NAMESPACE + 'left' in ind.keys():
+                        if int(ind.attrib[WORD_NAMESPACE + 'left']) != 0:
+                            margin += 1
+                    if WORD_NAMESPACE + 'right' in ind.keys():
+                        if int(ind.attrib[WORD_NAMESPACE + 'right']) != 0:
+                            margin += 1
 
             return margin / paragraph_number
 
+    # Return the actual text of the file
     def get_text(self):
         text = ""
 
@@ -186,11 +196,11 @@ class Format:
                 t = r.find(WORD_NAMESPACE + 't')
                 # Attempt to any text
                 if t is not None:
-                    text = text + t.text
+                    text += t.text
 
         return text
 
-    # Returns the documents count of words
+    # Returns the documents count of words, note that the exact count of words is dependent on Words standards
     def get_word_count(self):
         return self.word_count
 
