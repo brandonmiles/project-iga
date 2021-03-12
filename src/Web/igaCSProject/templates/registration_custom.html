@@ -1,0 +1,97 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block content %}
+<style>
+.center {
+  text-align: center;
+  border: 3px 337ab7;
+  padding: 20px;
+  text-align: center;
+  background:#337ab7;
+  color: white;
+  font-size: 40px;
+}
+</style>
+
+<script>
+function outputUpdate(age) {
+    document.querySelector('#selected-age').value = age;
+}
+</script>
+
+<div class="container-fluid p-3" style="border:3px solid #cecece padding:3px;">
+	<div class="center">
+		Intelligent Grading Assistant
+	</div>
+	
+	<nav class="navbar navbar-inverse">
+	  <div class="container-fluid">
+		<div class="navbar-header">
+			<a class="navbar-brand" href="#">UTD Logo</a>
+		</div>
+		<ul class="nav navbar-nav">
+			<li class="active"><a href="#">Home</a></li>
+			<li><a href="#">Page 1</a></li>
+			<li><a href="#">Page 2</a></li>
+			<li><a href="#">Page 3</a></li>
+		</ul>
+	  </div>
+	</nav>	
+  </div>
+  <hr>
+  <form action="" method="post" class="form" role="form">
+    {{ form.csrf_token() }}
+
+	<div class="row row-cols-2" style="padding:15px">
+		<div class="col-lg-8">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+				Essay
+				</div>
+				<div class="panel-body">
+					{{ wtf.form_field(form.essay, class='form-control', style="height: 500px", placeholder='') }}
+				</div>
+				<div class="panel-footer">
+					
+				<div class="panel panel-primary" style="max-height:220px">
+				<div class="panel-heading" >Preferences</div>
+					<div class="panel-body" style="max-width:500px">
+					{{ wtf.form_field(form.range1,  class='form-range', placeholder='Range1') }}
+					{{ wtf.form_field(form.range2,  class='form-range', placeholder='Range2') }}
+					{{ wtf.form_field(form.range3,  class='form-range', placeholder='Range3') }}
+					</div>
+				</div>
+				<button type="submit" class="btn btn-primary">Evaluate</button>
+					<button type="submit" class="btn btn-primary">Save</button>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-4">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					{{ wtf.form_field(form.score, class='form-control', placeholder='Score') }}
+				</div>
+				<div class="panel-body">
+					{{ wtf.form_field(form.response, class='form-control', style="height: 735px", placeholder='') }}
+				</div>	
+			</div>
+		</div>
+		
+	</div>
+	
+		
+	
+		
+		 
+        
+       
+   
+		
+</div>
+	
+   
+ </form>
+ <hr>
+ 
+</div>
+{% endblock %}
