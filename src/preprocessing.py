@@ -24,10 +24,13 @@ def essay_to_sentences(essay_v, remove_stopwords):
     sentences = []
     for raw_sentence in raw_sentences:
         if len(raw_sentence) > 0:
-            sentences.append(Preprocessing.essay_to_wordlist(raw_sentence, remove_stopwords))
+            sentences.append(essay_to_wordlist(raw_sentence, remove_stopwords))
     return sentences
 
 
+# This function computes the feature vector given some words from
+# an essay. An explanation of what a feature is may be found here:
+# https://en.wikipedia.org/wiki/Feature_(machine_learning).
 def make_feature_vec(words, model, num_features):
     feature_vec = np.zeros((num_features,), dtype="float32")
     num_words = 0
@@ -39,11 +42,12 @@ def make_feature_vec(words, model, num_features):
     feature_vec = np.divide(feature_vec, num_words)
     return feature_vec
 
-
+# This function computes the feature vector for each essay and
+# stores them in another vector called 'essay_feature_vecs'.
 def get_avg_feature_vecs(essays, model, num_features):
     counter = 0
     essay_feature_vecs = np.zeros((len(essays), num_features), dtype="float32")
     for essay in essays:
-        essay_feature_vecs[counter] = Preprocessing.make_feature_vec(essay, model, num_features)
+        essay_feature_vecs[counter] = make_feature_vec(essay, model, num_features)
         counter += 1
     return essay_feature_vecs
