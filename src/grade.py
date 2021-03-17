@@ -3,6 +3,7 @@ import grammar_check
 import keywords
 import feedback
 import format
+from pdfminer.high_level import extract_text
 
 
 class Grade:
@@ -21,7 +22,7 @@ class Grade:
     def get_grade_raw(self, text):
         grade, key_total, grammar_points, key_points, length_score = 100, 0, 0, 0, 1
         key_list = []
-        output_text = ""
+        debug, output = "", ""
 
         # Remove the necessary points from the score
         if self.rubric['grammar'] is not None:
@@ -67,33 +68,36 @@ class Grade:
 
         # Begin putting together the output text
         if self.rubric['grammar'] is not None:
-            output_text += "Errors: " + str(len(corrections)) + "\n"
-            output_text += str(corrections) + "\n"
+            debug += "Errors: " + str(len(corrections)) + "\n"
+            debug += str(corrections) + "\n"
         if self.rubric['key'] is not None:
-            output_text += "Keyword Usage: " + str(key_list) + "\n"
+            debug += "Keyword Usage: " + str(key_list) + "\n"
         if self.rubric['length'] is not None:
-            output_text += "Word Count: " + str(word_count) + "\n"
-
-        output_text += "\nGrade: " + str(grade) + "\n"
+            debug += "Word Count: " + str(word_count) + "\n"
 
         if self.rubric['grammar'] is not None:
-            output_text += feedback.grammar_feedback(grammar_points, self.rubric['grammar'])
+            output += feedback.grammar_feedback(grammar_points, self.rubric['grammar'])
         if self.rubric['key'] is not None:
-            output_text += feedback.keyword_feedback(key_points, self.rubric['key'])
+            output += feedback.keyword_feedback(key_points, self.rubric['key'])
         if self.rubric['length'] is not None:
-            output_text += feedback.length_feedback(length_score)
+            output += feedback.length_feedback(length_score)
 
-        return output_text
+        return debug, grade, output
 
     # Given a file path to a docx, print the grade with feedback
     def get_grade_docx(self, file_path):
-        word_doc = format.Format(file_path)
-        word_count = word_doc.get_word_count()
-        page_count = word_doc.get_page_count()
-        default_style = word_doc.get_default_style()
         grade, key_total, grammar_points, key_points, length_score = 100, 0, 0, 0, 1
         key_list, format_bool = [], [False] * 16
-        output_text = ""
+        debug, output = "", ""
+
+        try:
+            word_doc = format.Format(file_path)
+            word_count = word_doc.get_word_count()
+            page_count = word_doc.get_page_count()
+            default_style = word_doc.get_default_style()
+        except FileNotFoundError:
+            return None, None, None
+
 
         # Remove the necessary points from the score
         if self.rubric['grammar'] is not None:
@@ -213,10 +217,12 @@ class Grade:
                     best_case -= self.weights['format']
                     format_bool[13] = True
             if self.expected_format['indent'] is not None:
-                if self.expected_format['indent'] == 0.0:
-                    best_case -= min(self.weights['format'] * indent * 2, self.weights['format'])
+                if self.expected_format['indent'] < 0.5:
+                    best_case -= min(self.weights['format'] * (indent - self.expected_format['indent']) * 2,
+                                     self.weights['format'])
                 else:
-                    best_case -= max(min(self.weights['format'] * (1.0 - indent) * 2, self.weights['format']), 0)
+                    best_case -= max(min(self.weights['format'] * (self.expected_format['indent'] - indent) * 2,
+                                         self.weights['format']), 0)
                 if self.expected_format['indent'] != indent:
                     format_bool[14] = True
             if self.expected_format['left_margin'] is not None and self.expected_format['right_margin'] is not None:
@@ -232,23 +238,33 @@ class Grade:
 
         # Begin putting together the output text
         if self.rubric['grammar'] is not None:
-            output_text += "Errors: " + str(len(corrections)) + "\n" + str(corrections) + "\n"
+            debug += "Errors: " + str(len(corrections)) + "\n" + str(corrections) + "\n"
         if self.rubric['key'] is not None:
-            output_text += "Keyword Usage: " + str(key_list) + "\n"
+            debug += "Keyword Usage: " + str(key_list) + "\n"
         if self.rubric['length'] is not None:
-            output_text += "Word Count: " + str(word_count) + "\n"
+            debug += "Word Count: " + str(word_count) + "\n"
         if self.rubric['format'] is not None:
-            output_text += "Default Style: " + str(default_style) + "\nFonts: " + str(word_doc.get_font_table()) + "\n"
-
-        output_text += "\nGrade: " + str(grade) + "\n"
+            debug += "Default Style: " + str(default_style) + "\nFonts: " + str(word_doc.get_font_table()) + "\n"
 
         if self.rubric['grammar'] is not None:
-            output_text += feedback.grammar_feedback(grammar_points, self.rubric['grammar'])
+            output += feedback.grammar_feedback(grammar_points, self.rubric['grammar'])
         if self.rubric['key'] is not None:
-            output_text += feedback.keyword_feedback(key_points, self.rubric['key'])
+            output += feedback.keyword_feedback(key_points, self.rubric['key'])
         if self.rubric['length'] is not None:
-            output_text += feedback.length_feedback(length_score)
+            output += feedback.length_feedback(length_score)
         if self.rubric['format'] is not None:
-            output_text += feedback.format_feedback(format_bool)
+            output += feedback.format_feedback(format_bool)
 
-        return output_text
+        return debug, grade, output
+
+    # Honestly, due to PDF's lack of readable format storage, format grading is off limits for PDF's for now
+    def get_grade_pdf(self, file_path):
+        try:
+            text = extract_text(file_path)
+            # PDF reader has trouble dealing with large line spacing, so this is an attempt to fix it.
+            text = text.replace("\n\n", " ").replace("  ", " ").replace("  ", " ")
+
+            return self.get_grade_raw(text)
+
+        except FileNotFoundError:
+            return None, None, None

@@ -21,13 +21,14 @@ try:
     # Table column names are "essay_id", "essay_set", "essay", "domain1_predictionid", "domain2_predictionid"
 
     # Currently testing the ability to get information from a word document
-    print(g.get_grade_docx('../data/ay.docx'))
+    db, gd, out = g.get_grade_docx('../data/ay.docx')
+    print(db)
+    print(gd)
+    print(out)
 
     # Uncomment if you want to run the model.
     # model = ScoreModel()
     # model.train_and_test('../data/training_set.tsv')
-
-    quit()
 
     # Grade each essay
     a = 0
@@ -35,7 +36,10 @@ try:
         a += 1
         print("---------------------------------------------------------------------------------------------------\n")
         print("Essay: ", a)
-        print(g.get_grade_raw(i))
+        db, gd, out = g.get_grade_raw(i)
+        print(db)
+        print(gd)
+        print(out)
 
 except FileNotFoundError:
     print("File does not exist")
