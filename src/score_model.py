@@ -6,8 +6,10 @@ import preprocessing
 import score_model_helper
 from sklearn.model_selection import KFold
 from sklearn.metrics import cohen_kappa_score
+import math
 
 import numpy as np
+
 
 # This class contains the model for scoring the essay, and includes functions
 # for setting up and training the model.
@@ -24,23 +26,39 @@ class ScoreModel:
         self.model.compile(loss='mean_squared_error', optimizer='rmsprop', metrics=['accuracy', 'mae'])
         self.model.summary()
 
-
     # Returns the model object (after it's been set up)
     def get_model(self):
         return self.model
-
 
     # TODO: Need to split training and testing portions into separate functions.
     #
     # Train the model to prime it for scoring essays, then test it using
     # an evaluation metric (in this case, Cohen's kappa coefficient)
-    def train_and_test(self, data_loc):
+    def train_and_test(self, data_loc, essay_set):
         cv = KFold(n_splits=5, shuffle=True)
-        results = []  # Cohen's kappa coefficients
-        y_pred_list = []  # Actual scores predicted by the model
+        results, y_pred_list = [], []  # Cohen's kappa coefficients
 
-        x = ScoreModelHelper.get_dataframe(data_loc) # Training data
-        y = x['domain1_score']  # Scores from training data
+        # Get only the essays from the essay set you will be grading against
+        x = score_model_helper.get_dataframe(data_loc, essay_set)  # Training data
+
+        y = x.loc[:, 'rater1_domain1'].copy()
+        y2 = x.loc[:, 'rater2_domain1']
+        y3 = x.loc[:, 'rater3_domain1']
+
+        # Calculate the score of each essay based on the total of the raters
+        for i in range(len(y)):
+            if not math.isnan(y2[i]):
+                y[i] += y2[i]
+            if not math.isnan(y3[i]):
+                y[i] += y3[i]
+
+        # Find the max score possible and min score possible
+        y_min, y_max = int(y[0]), int(y[0])
+        for i in y:
+            if int(i) > y_max:
+                y_max = int(i)
+            if int(i) < y_min:
+                y_min = int(i)
 
         count = 1
         # Using the "split" function, we split the training data into
@@ -51,11 +69,11 @@ class ScoreModel:
             print("\n--------Fold {}--------\n".format(count))
             x_test, x_train, y_test, y_train = x.iloc[testcv], x.iloc[traincv], y.iloc[testcv], y.iloc[traincv]
 
-            train_essays = x_train['essay'] # Training essays
-            test_essays = x_test['essay'] # Test essays
+            train_essays = x_train.loc[:, 'essay']  # Training essays
+            test_essays = x_test.loc[:, 'essay']  # Test essays
 
             # Grabs all the sentences from each essay; setting up for Word2Vec
-            sentences = ScoreModelHelper.get_sentences(train_essays)
+            sentences = score_model_helper.get_sentences(train_essays)
 
             # Parameters for Word2Vec model
             num_features = 300
@@ -103,7 +121,6 @@ class ScoreModel:
 
             count += 1
 
-
     # Evaluate the input 'essay' on our trained model. See 'score_model_helper' file
     # for explanations of what the functions involved do.
     def evaluate(self, essay):
@@ -111,10 +128,9 @@ class ScoreModel:
         text_arr = score_model_helper.preprocess(essay, tk)
         text_arr = score_model_helper.array_and_reshape(text_arr)
         lstm_model = self.get_model()
-        lstm_model.load_weights('./model_weights/final_lstm.h5') # Get weights from trained model
-        y_pred = lstm_model.predict(text_arr)[0, 0] # Predict score of input essay
+        lstm_model.load_weights('./model_weights/final_lstm.h5')  # Get weights from trained model
+        y_pred = lstm_model.predict(text_arr)[0, 0]  # Predict score of input essay
         return y_pred
-
 
     # Tests the 'evaluate' function on a few essays.
     def test_evaluate(self):
