@@ -5,6 +5,17 @@ from flask_bootstrap import Bootstrap
 from score_model import ScoreModel
 import pandas as pd
 import grade
+import mysql.connector
+
+# set up information for database connection
+host = 'database-1.cluster-cf5kjev2ovc7.us-east-1.rds.amazonaws.com'
+user = 'admin'
+password = '8m8oqtTn'
+db = 'IGA_DB'
+
+# set up connection
+conn = mysql.connector.connect(host=host, user=user, passwd=password, database=db)
+cursor = conn.cursor()
 
 app = Flask(__name__)
 app.config.from_mapping(
@@ -21,6 +32,12 @@ def registration():
         print (essay)
         form.score.data = model.evaluate(essay)
         print (form.score.data)
+        # add essay to database
+        command= "INSERT INTO UserEssays (essay, score) VALUES (%s, %s)"
+        args = (essay, float(form.score.data))
+        cursor.execute(command, args)
+        # write update to database
+        conn.commit()
         form.response.data = 'Test response -- Your score from our intelligent grading system is given above'
     return render_template('registration_custom.html', form=form)
 
