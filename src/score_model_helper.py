@@ -6,13 +6,15 @@ import pickle
 import preprocessing
 
 
-# Returns pandas dataframe, with some dropped columns that
-# are irrelevant for now
-def get_dataframe(data_loc):
+# Returns pandas dataframe after getting rid of the essays we aren't grading against, also gets rid of unused columns
+def get_dataframe(data_loc, essay_set):
     df = pd.read_csv(data_loc, sep='\t', encoding='ISO-8859-1')
-    df = df.dropna(axis=1)  # Drop columns with 'missing' values
-    df = df.drop(columns=['rater1_domain1', 'rater2_domain1'])
-    df = df.drop(columns=['essay_id', 'essay_set'])
+    df = df.loc[df['essay_set'] == essay_set]
+    df = df.drop(columns=['essay_set', 'domain1_score', 'rater1_domain2', 'rater2_domain2', 'domain2_score',
+                          'rater1_trait1', 'rater1_trait2', 'rater1_trait3', 'rater1_trait4', 'rater1_trait5',
+                          'rater1_trait6', 'rater2_trait1', 'rater2_trait2', 'rater2_trait3', 'rater2_trait4',
+                          'rater2_trait5', 'rater2_trait6', 'rater3_trait1', 'rater3_trait2', 'rater3_trait3',
+                          'rater3_trait4', 'rater3_trait5', 'rater3_trait6'])
     return df
 
 

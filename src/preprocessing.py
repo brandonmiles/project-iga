@@ -1,5 +1,4 @@
 # Credit: Soumyadip Sarkar (from kaggle.com)
-
 import numpy as np
 import nltk
 import re
@@ -13,7 +12,7 @@ def essay_to_wordlist(essay_v, remove_stopwords):
     words = essay_v.lower().split()
     if remove_stopwords:
         stops = set(stopwords.words("english"))
-        words = [w for w in words if not w in stops]
+        words = [w for w in words if w not in stops]
     return words
 
 
@@ -41,6 +40,7 @@ def make_feature_vec(words, model, num_features):
             feature_vec = np.add(feature_vec, model[word])
     feature_vec = np.divide(feature_vec, num_words)
     return feature_vec
+
 
 # This function computes the feature vector for each essay and
 # stores them in another vector called 'essay_feature_vecs'.

@@ -1,6 +1,6 @@
-# from score_model import ScoreModel
+from score_model import ScoreModel
 import pandas as pd
-import grade
+from grade import Grade
 
 
 # How many points each graded section is worth, use None to remove from the rubric
@@ -14,21 +14,18 @@ allowed_fonts = ["Times New Roman", "Calibri Math"]
 expected_style = {'font': allowed_fonts, 'size': 12, 'line_spacing': 2.0, 'after_spacing': 0.0,
                   'before_spacing': 0.0, 'page_width': 8.5, 'page_height': 11, 'left_margin': 1.0, 'bottom_margin': 1.0,
                   'right_margin': 1.0, 'top_margin': 1.0, 'header': None, 'footer': None, 'gutter': 0.0, 'indent': 1.0}
-g = grade.Grade(rubric, weights, expected_format=expected_style)
+g = Grade(rubric, weights, expected_format=expected_style)
 
 try:
     test_data = pd.read_csv('../data/test_set.tsv', sep='\t', encoding='ISO-8859-1')
     # Table column names are "essay_id", "essay_set", "essay", "domain1_predictionid", "domain2_predictionid"
 
-    # Currently testing the ability to get information from a word document
-    db, gd, out = g.get_grade_docx('../data/ay.docx')
-    print(db)
-    print(gd)
-    print(out)
-
     # Uncomment if you want to run the model.
-    # model = ScoreModel()
-    # model.train_and_test('../data/training_set.tsv')
+    model = ScoreModel()
+    # Change the int to which essay set you want to grade the model against.
+    model.train_and_test('../data/training_set.tsv', 1)
+
+    quit()
 
     # Grade each essay
     a = 0
