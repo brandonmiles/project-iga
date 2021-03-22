@@ -15,6 +15,8 @@ def get_dataframe(data_loc, essay_set):
                           'rater1_trait6', 'rater2_trait1', 'rater2_trait2', 'rater2_trait3', 'rater2_trait4',
                           'rater2_trait5', 'rater2_trait6', 'rater3_trait1', 'rater3_trait2', 'rater3_trait3',
                           'rater3_trait4', 'rater3_trait5', 'rater3_trait6'])
+    df = df.set_index('essay_id')
+
     return df
 
 

@@ -1,14 +1,13 @@
+from gensim.models import KeyedVectors
 from gensim.models import Word2Vec
 from keras.layers import LSTM, Dense, Dropout
-from gensim.models import KeyedVectors
 from keras.models import Sequential
+import math
+import numpy as np
 import preprocessing
 import score_model_helper
-from sklearn.model_selection import KFold
 from sklearn.metrics import cohen_kappa_score
-import math
-
-import numpy as np
+from sklearn.model_selection import KFold
 
 
 # This class contains the model for scoring the essay, and includes functions
@@ -25,6 +24,8 @@ class ScoreModel:
         self.model.add(Dense(1, activation='relu'))
         self.model.compile(loss='mean_squared_error', optimizer='rmsprop', metrics=['accuracy', 'mae'])
         self.model.summary()
+        self.max_score = None
+        self.min_score = None
 
     # Returns the model object (after it's been set up)
     def get_model(self):
@@ -46,19 +47,25 @@ class ScoreModel:
         y3 = x.loc[:, 'rater3_domain1']
 
         # Calculate the score of each essay based on the total of the raters
-        for i in range(len(y)):
+        for i in y.index.values:
             if not math.isnan(y2[i]):
                 y[i] += y2[i]
             if not math.isnan(y3[i]):
                 y[i] += y3[i]
 
         # Find the max score possible and min score possible
-        y_min, y_max = int(y[0]), int(y[0])
-        for i in y:
-            if int(i) > y_max:
-                y_max = int(i)
-            if int(i) < y_min:
-                y_min = int(i)
+        y_min, y_max = y[y.first_valid_index()], y[y.first_valid_index()]
+        for i in y.index.values:
+            if y[i] > y_max:
+                y_max = y[i]
+            if y[i] < y_min:
+                y_min = y[i]
+
+        # Normalizing the scores to between 0 and 100
+        for i in y.index.values:
+            if not math.isnan(y[i]):
+                y[i] = float(y[i] - y_min) / float(y_max - y_min) * 100
+        print(y)
 
         count = 1
         # Using the "split" function, we split the training data into
@@ -107,7 +114,7 @@ class ScoreModel:
 
             # Test LSTM model on test data
             y_pred = lstm_model.predict(test_data_vecs)
-            y_pred = np.around(y_pred)
+            y_pred = np.around(y_pred, decimals=0)
             y_pred_list.append(y_pred)
 
             # Save the final iteration of the trained model
@@ -129,8 +136,8 @@ class ScoreModel:
         text_arr = score_model_helper.array_and_reshape(text_arr)
         lstm_model = self.get_model()
         lstm_model.load_weights('./model_weights/final_lstm.h5')  # Get weights from trained model
-        y_pred = lstm_model.predict(text_arr)[0, 0]  # Predict score of input essay
-        return y_pred
+        score = int(lstm_model.predict(text_arr)[0, 0])  # Predict score of input essay
+        return score
 
     # Tests the 'evaluate' function on a few essays.
     def test_evaluate(self):

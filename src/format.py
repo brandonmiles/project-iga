@@ -1,8 +1,39 @@
 import zipfile
 import xml.etree.ElementTree
+import json
 
 WORD_NAMESPACE = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
 WORD_PROPERTIES = '{http://schemas.openxmlformats.org/officeDocument/2006/extended-properties}'
+
+
+# Get the style format from a JSON file
+def get_format_file(file_path):
+    try:
+        data = open(file_path, 'r')
+        json_obj = json.loads(data.read())
+
+        style = {'font': json_obj['font'], 'size': json_obj["size"], 'line_spacing': json_obj["line_spacing"],
+                 'after_spacing': json_obj["after_spacing"], 'before_spacing': json_obj["before_spacing"],
+                 'page_width': json_obj["page_width"], 'page_height': json_obj["page_height"],
+                 'left_margin': json_obj["left_margin"], 'bottom_margin': json_obj["bottom_margin"],
+                 'right_margin': json_obj["right_margin"], 'top_margin': json_obj["top_margin"],
+                 'header': json_obj["header"], 'footer': json_obj["footer"], 'gutter': json_obj["gutter"],
+                 'indent': json_obj["indent"]}
+        return style
+    except FileNotFoundError:
+        return None
+
+
+# Store the style format as a JSON for later use
+def update_format_file(file_path, style):
+    try:
+        json_obj = json.dumps(style, indent=1)
+        data = open(file_path, 'w')
+        data.write(json_obj)
+        return True
+
+    except FileNotFoundError:
+        return False
 
 
 # NOTES: Know these conversions

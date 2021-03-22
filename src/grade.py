@@ -8,10 +8,13 @@ from pdfminer.high_level import extract_text
 
 class Grade:
     # Technically the last field can be voided if you are either not grading format or only using the raw text function
-    def __init__(self, rubric_list, weight_list, dictionary_path='../data/dictionary.tsv', expected_format=None):
-        self.rubric = rubric_list
-        self.weights = weight_list
-        self.expected_format = expected_format
+    def __init__(self, rubric, weight, dictionary_path='../data/dictionary.tsv', style=None,
+                 style_path='../data/standard.json'):
+        self.rubric = rubric
+        self.weights = weight
+        self.expected_format = style
+        if style is None and style_path is not None:
+            self.expected_format = format.get_format_file(style_path)
 
         try:
             self.words = keywords.KeyWords(dictionary_path)
@@ -97,7 +100,6 @@ class Grade:
             default_style = word_doc.get_default_style()
         except FileNotFoundError:
             return None, None, None
-
 
         # Remove the necessary points from the score
         if self.rubric['grammar'] is not None:
