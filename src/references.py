@@ -1,34 +1,48 @@
 import re
 
+import nltk
+from nltk import word_tokenize
+
 
 class ReferencesCheck:
-    def extractCitation(self):
-        self.lower()
-        count = 0
+    def extract_citation(self):
+        matches = re.findall(r'\(.*?\)', self)  # extract everything inside a '()'
+        keywords = []  # store named entities
+        names = []  # store names
 
-        author = "(?:[A-Z][A-Za-z'`-]+)"
-        etal = "(?:et al.?)"
-        additional = "(?:,? (?:(?:and |& )?" + author + "|" + etal + "))"
-        year_num = "(?:19|20)[0-9][0-9]"
-        page_num = "(?:, p.? [0-9]+)?"
-        year = "(?:, *" + year_num + page_num + "| *\(" + year_num + page_num + "\))"
-        regex = "(" + author + additional + "*" + year + ")"
+        for i in range(len(matches)):
+            NE_tokens = word_tokenize(matches[i])
+            NE_tags = nltk.pos_tag(NE_tokens)
+            NE_NER = nltk.ne_chunk(NE_tags)
 
-        matches = re.findall(regex, self)
+            # only save a person or organization in keywords
+            for t in NE_NER.subtrees():
+                if t.label() == 'PERSON' or t.label() == 'ORGANIZATION':
+                    keywords.append(list(t))
 
-        return matches
+        # extract the names from keywords
+        for i in range(len(keywords)):
+            names.append(keywords[i][0][0])
+
+        return matches, names  # return matches and names
 
     def num_of_missing_citation(self):
-        intext_citation = ReferencesCheck.extract_citation(self)
-        reference_found = 0
+        in_text, names = ReferencesCheck.extract_citation(self)
+        found_references = []
+        missing_references = []
 
-        x = self.rfind("reference")
+        x = self.rfind("Reference")
         if x:
-            references = self[x:]
-            for i in range(len(intext_citation)):
-                if intext_citation[i].split(',')[0] in references:
-                    reference_found += 1
+            references = self[x:].lower()
+            for i in range(len(names)):
+                if names[i].lower() in references:
+                    found_references.append(names[i])
+                else:
+                    missing_references.append(names[i])
 
-        missing_citation = len(intext_citation) - reference_found
+        missing_citation = len(missing_references)
+
+        #print(missing_references)
+        #print(found_references)
 
         return missing_citation
