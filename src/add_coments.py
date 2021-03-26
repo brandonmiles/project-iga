@@ -379,21 +379,21 @@ while True:
     print(view['essay'].values)
 
     a = input("Enter the idea score(1-3): ")
-    if a == '0':
+    if a == '0' or not a.isdigit():
         break
-    if not 1 < int(a) < 3:
+    if not 0 < int(a) < 4:
         continue
 
     b = input("Enter the organization score(1-3): ")
-    if b == '0':
+    if b == '0' or not b.isdigit():
         break
-    if not 1 < int(b) < 3:
+    if not 0 < int(b) < 4:
         continue
 
     c = input("Enter the style score(1-3): ")
-    if c == '0':
+    if c == '0' or not c.isdigit():
         break
-    if not 1 < int(c) < 3:
+    if not 0 < int(c) < 4:
         continue
     stuff.loc[view.index.values[0], 'comments'] = "ID" + a + ",ORG" + b + ",STY" + c
 
