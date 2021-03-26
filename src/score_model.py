@@ -24,8 +24,6 @@ class ScoreModel:
         self.model.add(Dense(1, activation='relu'))
         self.model.compile(loss='mean_squared_error', optimizer='rmsprop', metrics=['accuracy', 'mae'])
         self.model.summary()
-        self.max_score = None
-        self.min_score = None
 
     # Returns the model object (after it's been set up)
     def get_model(self):
@@ -35,37 +33,41 @@ class ScoreModel:
     #
     # Train the model to prime it for scoring essays, then test it using
     # an evaluation metric (in this case, Cohen's kappa coefficient)
-    def train_and_test(self, data_loc, essay_set):
+    def train_and_test(self, data_loc):
         cv = KFold(n_splits=5, shuffle=True)
         results, y_pred_list = [], []  # Cohen's kappa coefficients
 
         # Get only the essays from the essay set you will be grading against
-        x = score_model_helper.get_dataframe(data_loc, essay_set)  # Training data
+        x = score_model_helper.get_dataframe(data_loc)  # Training data
 
         y = x.loc[:, 'rater1_domain1'].copy()
         y2 = x.loc[:, 'rater2_domain1']
-        y3 = x.loc[:, 'rater3_domain1']
+        s = x.loc[:, 'essay_set']
 
         # Calculate the score of each essay based on the total of the raters
         for i in y.index.values:
             if not math.isnan(y2[i]):
                 y[i] += y2[i]
-            if not math.isnan(y3[i]):
-                y[i] += y3[i]
 
-        # Find the max score possible and min score possible
-        y_min, y_max = y[y.first_valid_index()], y[y.first_valid_index()]
-        for i in y.index.values:
-            if y[i] > y_max:
-                y_max = y[i]
-            if y[i] < y_min:
-                y_min = y[i]
-
-        # Normalizing the scores to between 0 and 100
-        for i in y.index.values:
-            if not math.isnan(y[i]):
-                y[i] = float(y[i] - y_min) / float(y_max - y_min) * 100
-        print(y)
+        # Normalizing the scores
+        for i in s.index.values:
+            setnum = s[i]
+            if setnum == 1:
+                y[i] = int(((y[i] - 2) / 10) * 100)
+            if setnum == 2:
+                y[i] = int(((y[i] - 2) / 8) * 100)
+            if setnum == 3:
+                y[i] = int((y[i] / 6) * 100)
+            if setnum == 4:
+                y[i] = int((y[i] / 6) * 100)
+            if setnum == 5:
+                y[i] = int((y[i] / 8) * 100)
+            if setnum == 6:
+                y[i] = int((y[i] / 8) * 100)
+            if setnum == 7:
+                y[i] = int((y[i] / 30) * 100)
+            if setnum == 8:
+                y[i] = int((y[i] / 60) * 100)
 
         count = 1
         # Using the "split" function, we split the training data into
