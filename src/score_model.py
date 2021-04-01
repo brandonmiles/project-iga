@@ -29,13 +29,12 @@ class ScoreModel:
     def get_model(self):
         return self.model
 
-    # TODO: Need to split training and testing portions into separate functions.
-    #
     # Train the model to prime it for scoring essays, then test it using
     # an evaluation metric (in this case, Cohen's kappa coefficient)
     def train_and_test(self, data_loc):
         cv = KFold(n_splits=5, shuffle=True)
         results, y_pred_list = [], []  # Cohen's kappa coefficients
+        float_y = []
 
         # Get only the essays from the essay set you will be grading against
         x = score_model_helper.get_dataframe(data_loc)  # Training data
@@ -53,21 +52,21 @@ class ScoreModel:
         for i in s.index.values:
             setnum = s[i]
             if setnum == 1:
-                y[i] = int(((y[i] - 2) / 10) * 100)
+                float_y.insert(i, (y[i] - 2) / 10)
             if setnum == 2:
-                y[i] = int(((y[i] - 2) / 8) * 100)
+                float_y.insert(i, (y[i] - 2) / 8)
             if setnum == 3:
-                y[i] = int((y[i] / 6) * 100)
+                float_y.insert(i, y[i] / 6)
             if setnum == 4:
-                y[i] = int((y[i] / 6) * 100)
+                float_y.insert(i, y[i] / 6)
             if setnum == 5:
-                y[i] = int((y[i] / 8) * 100)
+                float_y.insert(i, y[i] / 8)
             if setnum == 6:
-                y[i] = int((y[i] / 8) * 100)
+                float_y.insert(i, y[i] / 8)
             if setnum == 7:
-                y[i] = int((y[i] / 30) * 100)
+                float_y.insert(i, y[i] / 30)
             if setnum == 8:
-                y[i] = int((y[i] / 60) * 100)
+                float_y.insert(i, y[i] / 60)
 
         count = 1
         # Using the "split" function, we split the training data into
@@ -76,7 +75,8 @@ class ScoreModel:
         # each iteration improving upon the last.
         for traincv, testcv in cv.split(x):
             print("\n--------Fold {}--------\n".format(count))
-            x_test, x_train, y_test, y_train = x.iloc[testcv], x.iloc[traincv], y.iloc[testcv], y.iloc[traincv]
+            x_test, x_train = x.iloc[testcv], x.iloc[traincv]
+            y_test, y_train = np.array(float_y)[testcv], np.array(float_y)[traincv]
 
             train_essays = x_train.loc[:, 'essay']  # Training essays
             test_essays = x_test.loc[:, 'essay']  # Test essays
@@ -116,7 +116,8 @@ class ScoreModel:
 
             # Test LSTM model on test data
             y_pred = lstm_model.predict(test_data_vecs)
-            y_pred = np.around(y_pred, decimals=0)
+            y_pred = np.around(y_pred * 100)
+            y_test = np.around(y_test * 100)
             y_pred_list.append(y_pred)
 
             # Save the final iteration of the trained model
@@ -124,7 +125,7 @@ class ScoreModel:
                 lstm_model.save('./model_weights/final_lstm.h5')
 
             # Evaluate the model using Cohen's kappa coefficient
-            result = cohen_kappa_score(y_test.values, y_pred, weights='quadratic')
+            result = cohen_kappa_score(y_test, y_pred, weights='quadratic')
             print("Cohen's kappa coefficient: {}".format(result))
             results.append(result)
 
@@ -138,7 +139,7 @@ class ScoreModel:
         text_arr = score_model_helper.array_and_reshape(text_arr)
         lstm_model = self.get_model()
         lstm_model.load_weights('./model_weights/final_lstm.h5')  # Get weights from trained model
-        score = int(lstm_model.predict(text_arr)[0, 0])  # Predict score of input essay
+        score = lstm_model.predict(text_arr)[0, 0]  # Predict score of input essay
         return score
 
     # Tests the 'evaluate' function on a few essays.

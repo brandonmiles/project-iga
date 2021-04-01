@@ -1,8 +1,9 @@
-import pandas
 import grammar_check
 import keywords
 import feedback
 import format
+import references
+from score_model import ScoreModel
 from pdfminer.high_level import extract_text
 
 
@@ -13,6 +14,7 @@ class Grade:
         self.rubric = rubric
         self.weights = weight
         self.expected_format = style
+        self.model = ScoreModel()
         if style is None and style_path is not None:
             self.expected_format = format.get_format_file(style_path)
 
@@ -23,9 +25,10 @@ class Grade:
 
     # Given raw text, print the grade with feedback
     def get_grade_raw(self, text):
-        grade, key_total, grammar_points, key_points, length_score = 100, 0, 0, 0, 1
+        grade, key_total, grammar_points, key_points, length_score, reference, reference_score = 100, 0, 0, 0, 1, 0, 0
         key_list = []
-        debug, output = "", ""
+        debug, output, reference_output = "", "", ""
+        model_score = 0.0
 
         # Remove the necessary points from the score
         if self.rubric['grammar'] is not None:
@@ -34,6 +37,10 @@ class Grade:
             grade -= self.rubric['key']
         if self.rubric['length'] is not None:
             grade -= self.rubric['length']
+        if self.rubric['model'] is not None:
+            grade -= self.rubric['model']
+        if self.rubric['reference'] is not None:
+            grade -= self.rubric['reference']
 
         # Correct the text first for a more accurate word count and key word examination
         corrections, corrected_text = grammar_check.number_of_errors(text)
@@ -65,6 +72,17 @@ class Grade:
             if length_score == 1:
                 grade += self.rubric['length']
 
+        # Grade the essay with the model
+        if self.rubric['model'] is not None:
+            model_score = self.model.evaluate(corrected_text)
+            grade += round(self.rubric['model'] * model_score)
+
+        # Check for the number of references are missing
+        if self.rubric['reference'] is not None:
+            reference = references.extract_citation(text)
+            reference_score = max(self.rubric['reference'] - reference * self.weights['reference'], 0)
+            grade += reference_score
+
         # Depending on the rubric, it may be possible to get a negative score
         if grade < 0:
             grade = 0
@@ -77,6 +95,10 @@ class Grade:
             debug += "Keyword Usage: " + str(key_list) + "\n"
         if self.rubric['length'] is not None:
             debug += "Word Count: " + str(word_count) + "\n"
+        if self.rubric['model'] is not None:
+            debug += "Model Score: " + str(model_score) + "\n"
+        if self.rubric['reference'] is not None:
+            debug += "Number of Missing References: " + str(reference) + "\n"
 
         if self.rubric['grammar'] is not None:
             output += feedback.grammar_feedback(grammar_points, self.rubric['grammar'])
@@ -84,14 +106,17 @@ class Grade:
             output += feedback.keyword_feedback(key_points, self.rubric['key'])
         if self.rubric['length'] is not None:
             output += feedback.length_feedback(length_score)
+        if self.rubric['reference'] is not None:
+            output += feedback.reference_feedback(reference_score, self.rubric['reference'])
 
         return debug, grade, output
 
     # Given a file path to a docx, print the grade with feedback
     def get_grade_docx(self, file_path):
-        grade, key_total, grammar_points, key_points, length_score = 100, 0, 0, 0, 1
+        grade, key_total, grammar_points, key_points, length_score, reference, reference_score = 100, 0, 0, 0, 1, 0, 0
         key_list, format_bool = [], [False] * 16
         debug, output = "", ""
+        model_score = 0.0
 
         try:
             word_doc = format.Format(file_path)
@@ -110,6 +135,10 @@ class Grade:
             grade -= self.rubric['length']
         if self.rubric['format'] is not None:
             grade -= self.rubric['format']
+        if self.rubric['model'] is not None:
+            grade -= self.rubric['model']
+        if self.rubric['reference'] is not None:
+            grade -= self.rubric['reference']
 
         # Correct the text first for a more accurate word count and key word examination
         corrections, corrected_text = grammar_check.number_of_errors(word_doc.get_text())
@@ -234,6 +263,17 @@ class Grade:
 
             grade = grade + round(best_case)
 
+        # Grade the essay with the model
+        if self.rubric['model'] is not None:
+            model_score = self.model.evaluate(corrected_text)
+            grade += round(self.rubric['model'] * model_score)
+
+        # Check for the number of references are missing
+        if self.rubric['reference'] is not None:
+            reference = references.extract_citation(word_doc.get_text())
+            reference_score = max(self.rubric['reference'] - reference * self.weights['reference'], 0)
+            grade += reference_score
+
         # Depending on the rubric, it may be possible to get a negative score
         if grade < 0:
             grade = 0
@@ -245,8 +285,12 @@ class Grade:
             debug += "Keyword Usage: " + str(key_list) + "\n"
         if self.rubric['length'] is not None:
             debug += "Word Count: " + str(word_count) + "\n"
+        if self.rubric['model'] is not None:
+            debug += "Model Score: " + str(model_score) + "\n"
         if self.rubric['format'] is not None:
             debug += "Default Style: " + str(default_style) + "\nFonts: " + str(word_doc.get_font_table()) + "\n"
+        if self.rubric['reference'] is not None:
+            debug += "Number of Missing References: " + str(reference) + "\n"
 
         if self.rubric['grammar'] is not None:
             output += feedback.grammar_feedback(grammar_points, self.rubric['grammar'])
@@ -256,6 +300,8 @@ class Grade:
             output += feedback.length_feedback(length_score)
         if self.rubric['format'] is not None:
             output += feedback.format_feedback(format_bool)
+        if self.rubric['reference'] is not None:
+            output += feedback.reference_feedback(reference_score, self.rubric['reference'])
 
         return debug, grade, output
 
@@ -270,3 +316,7 @@ class Grade:
 
         except FileNotFoundError:
             return None, None, None
+
+    # Call this function to retrain the model
+    def retrain(self, file_path):
+        self.model.train_and_test(file_path)

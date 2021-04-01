@@ -87,3 +87,18 @@ def format_feedback(bool_list):
         text = "Paper adheres to format standards correctly.\n"
 
     return text
+
+
+# Returns feedback on the number of missing references
+def reference_feedback(score, score_max):
+    score = score / score_max * 3
+    text = ""
+
+    if score < 1:
+        text = "Failed to properly reference a majority of the text"
+    if score < 2:
+        text = "Some references were missing"
+    else:
+        text = "All references found"
+
+    return text
