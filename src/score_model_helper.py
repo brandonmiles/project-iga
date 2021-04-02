@@ -9,11 +9,11 @@ import preprocessing
 # Returns pandas dataframe after getting rid of the essays we aren't grading against, also gets rid of unused columns
 def get_dataframe(data_loc):
     df = pd.read_csv(data_loc, sep='\t', encoding='ISO-8859-1')
-    df = df.drop(columns=['domain1_score', 'rater1_domain2', 'rater2_domain2', 'domain2_score',
-                          'rater1_trait1', 'rater1_trait2', 'rater1_trait3', 'rater1_trait4', 'rater1_trait5',
-                          'rater1_trait6', 'rater2_trait1', 'rater2_trait2', 'rater2_trait3', 'rater2_trait4',
-                          'rater2_trait5', 'rater2_trait6', 'rater3_trait1', 'rater3_trait2', 'rater3_trait3',
-                          'rater3_trait4', 'rater3_trait5', 'rater3_trait6'])
+    df = df.drop(columns=['rater1_domain1', 'rater2_domain1', 'rater3_domain1', 'rater1_domain2', 'rater2_domain2',
+                          'domain2_score', 'rater1_trait1', 'rater1_trait2', 'rater1_trait3', 'rater1_trait4',
+                          'rater1_trait5', 'rater1_trait6', 'rater2_trait1', 'rater2_trait2', 'rater2_trait3',
+                          'rater2_trait4', 'rater2_trait5', 'rater2_trait6', 'rater3_trait1', 'rater3_trait2',
+                          'rater3_trait3', 'rater3_trait4', 'rater3_trait5', 'rater3_trait6'])
     df = df.set_index('essay_id')
 
     return df

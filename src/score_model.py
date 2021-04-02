@@ -3,6 +3,7 @@ from gensim.models import Word2Vec
 from keras.layers import LSTM, Dense, Dropout
 from keras.models import Sequential
 import math
+import grammar_check
 import numpy as np
 import preprocessing
 import score_model_helper
@@ -39,30 +40,23 @@ class ScoreModel:
         # Get only the essays from the essay set you will be grading against
         x = score_model_helper.get_dataframe(data_loc)  # Training data
 
-        y = x.loc[:, 'rater1_domain1'].copy()
-        y2 = x.loc[:, 'rater2_domain1']
-        s = x.loc[:, 'essay_set']
-
-        # Calculate the score of each essay based on the total of the raters
-        for i in y.index.values:
-            if not math.isnan(y2[i]):
-                y[i] += y2[i]
+        y = x.loc[:, 'domain1_score']
 
         # Normalizing the scores
-        for i in s.index.values:
-            setnum = s[i]
+        for i in y.index.values:
+            setnum = x.loc[i, 'essay_set']
             if setnum == 1:
                 float_y.insert(i, (y[i] - 2) / 10)
             if setnum == 2:
                 float_y.insert(i, (y[i] - 2) / 8)
             if setnum == 3:
-                float_y.insert(i, y[i] / 6)
+                float_y.insert(i, y[i] / 3)
             if setnum == 4:
-                float_y.insert(i, y[i] / 6)
+                float_y.insert(i, y[i] / 3)
             if setnum == 5:
-                float_y.insert(i, y[i] / 8)
+                float_y.insert(i, y[i] / 4)
             if setnum == 6:
-                float_y.insert(i, y[i] / 8)
+                float_y.insert(i, y[i] / 4)
             if setnum == 7:
                 float_y.insert(i, y[i] / 30)
             if setnum == 8:

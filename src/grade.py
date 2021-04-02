@@ -7,6 +7,10 @@ from score_model import ScoreModel
 from pdfminer.high_level import extract_text
 
 
+def get_style(filepath):
+    return format.get_format_file(filepath)
+
+
 class Grade:
     # Technically the last field can be voided if you are either not grading format or only using the raw text function
     def __init__(self, rubric, weight, dictionary_path='../data/dictionary.tsv', style=None,
@@ -320,3 +324,8 @@ class Grade:
     # Call this function to retrain the model
     def retrain(self, file_path):
         self.model.train_and_test(file_path)
+
+    # access to format function through Grade.py
+    def update_style(self, filepath, style):
+        self.expected_format = style
+        format.update_format_file(filepath, style)
