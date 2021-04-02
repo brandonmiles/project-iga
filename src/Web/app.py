@@ -10,7 +10,7 @@ import pandas as pd
 from grade import Grade
 import mysql.connector
 
-UPLOAD_FOLDER = 'C:\\Users\\Gautam\\Desktop\\freshhStart\\uploads'
+UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'docx'}
 
 
@@ -21,8 +21,8 @@ password = '8m8oqtTn'
 db = 'IGA_DB'
 
 # set up connection
-#conn = mysql.connector.connect(host=host, user=user, passwd=password, database=db)
-#cursor = conn.cursor()
+conn = mysql.connector.connect(host=host, user=user, passwd=password, database=db)
+cursor = conn.cursor()
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -105,6 +105,14 @@ def registration():
             print(db)
             print(gd)
             print(out)
+            # add file to database
+            command = "INSERT INTO UserFiles (name, data, grade, feedback) VALUES (%s, %s, %s, %s)"
+            new_file = open(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'rb')
+            args = (file.filename, new_file.read(), gd, out)
+            cursor.execute(command, args)
+            new_file.close()
+            # write update to database
+            conn.commit()
             form.grade.data=gd
             form.response.data=out
             form.error.data=db
