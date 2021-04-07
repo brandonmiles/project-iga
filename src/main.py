@@ -1,4 +1,3 @@
-# from score_model import ScoreModel
 import pandas as pd
 from grade import Grade
 import nltk
@@ -14,7 +13,9 @@ g = Grade(rubric, weights)
 try:
     test_data = pd.read_csv('../data/test_set.tsv', sep='\t', encoding='ISO-8859-1')
 
-    # g.retrain('../data/training_set.tsv')
+    # g.retrain_score('../data/training_set.tsv')
+
+    g.retrain_feedback('../data/comment_set.csv')
 
     # Grade each essay
     a = 0

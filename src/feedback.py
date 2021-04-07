@@ -92,13 +92,51 @@ def format_feedback(bool_list):
 # Returns feedback on the number of missing references
 def reference_feedback(score, score_max):
     score = score / score_max * 3
-    text = ""
+    text = "All references found\n"
 
     if score < 1:
-        text = "Failed to properly reference a majority of the text"
+        text = "Failed to properly reference a majority of the text\n"
     if score < 2:
-        text = "Some references were missing"
-    else:
-        text = "All references found"
+        text = "Some references were missing\n"
+
+    return text
+
+
+def idea_feedback(score):
+    text = "The ideas presented in the essay have little to no relevance to the topic. There are few, if any, details" \
+           " that are connected to the ideas presented.\n"
+
+    if score == 0:
+        text = "The ideas presented in the essay are on-topic and well-presented. The details are specific and " \
+               "clearly connected to the ideas.\n"
+    if score == 1:
+        text = "The ideas presented in the essay are on-topic, but the ideas and the details relating to them are not" \
+               " necessarily well-presented.\n"
+
+    return text
+
+
+def organization_feedback(score):
+    text = "The flow of the essay lacks smoothness, and the connections between sentences are often not clear.\n"
+
+    if score == 0:
+        text = "The flow of the essay is smooth. There are clear and logical connections between sentences.\n"
+    if score == 1:
+        text = "The flow of the essay is smooth, but rocky at some points. The connections between sentences are " \
+               "typically clear and logical.\n"
+
+    return text
+
+
+def style_feedback(score):
+    text = "The author has poor command of their language. Sentence structure and/or vocabulary usage is repetitive, " \
+           "and/or the author’s language does not support their purpose.\n"
+
+    if score == 0:
+        text = "The author has total command of their language. Sentence structure and vocabulary usage is varied, " \
+               "and the author effectively uses language to support their purpose.\n"
+    if score == 1:
+        text = "The author has adequate command of their language. Sentence structure and vocabulary usage are " \
+               "effective at communicating the author’s purpose.\n"
 
     return text

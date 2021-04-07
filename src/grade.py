@@ -4,6 +4,7 @@ import feedback
 import format
 import references
 from score_model import ScoreModel
+from score_model import FeedbackModel
 from pdfminer.high_level import extract_text
 
 
@@ -19,6 +20,7 @@ class Grade:
         self.weights = weight
         self.expected_format = style
         self.model = ScoreModel()
+        self.f_model = FeedbackModel()
         if style is None and style_path is not None:
             self.expected_format = format.get_format_file(style_path)
 
@@ -30,6 +32,7 @@ class Grade:
     # Given raw text, print the grade with feedback
     def get_grade_raw(self, text):
         grade, key_total, grammar_points, key_points, length_score, reference, reference_score = 100, 0, 0, 0, 1, 0, 0
+        idea_score, organization_score, style_score = 0, 0, 0
         key_list = []
         debug, output, reference_output = "", "", ""
         model_score = 0.0
@@ -79,6 +82,7 @@ class Grade:
         # Grade the essay with the model
         if self.rubric['model'] is not None:
             model_score = self.model.evaluate(corrected_text)
+            idea_score, organization_score, style_score = self.f_model.evaluate(corrected_text)
             grade += round(self.rubric['model'] * model_score)
 
         # Check for the number of references are missing
@@ -110,6 +114,10 @@ class Grade:
             output += feedback.keyword_feedback(key_points, self.rubric['key'])
         if self.rubric['length'] is not None:
             output += feedback.length_feedback(length_score)
+        if self.rubric['model'] is not None:
+            output += feedback.idea_feedback(idea_score)
+            output += feedback.organization_feedback(organization_score)
+            output += feedback.style_feedback(style_score)
         if self.rubric['reference'] is not None:
             output += feedback.reference_feedback(reference_score, self.rubric['reference'])
 
@@ -118,6 +126,7 @@ class Grade:
     # Given a file path to a docx, print the grade with feedback
     def get_grade_docx(self, file_path):
         grade, key_total, grammar_points, key_points, length_score, reference, reference_score = 100, 0, 0, 0, 1, 0, 0
+        idea_score, organization_score, style_score = 0, 0, 0
         key_list, format_bool = [], [False] * 16
         debug, output = "", ""
         model_score = 0.0
@@ -270,6 +279,7 @@ class Grade:
         # Grade the essay with the model
         if self.rubric['model'] is not None:
             model_score = self.model.evaluate(corrected_text)
+            idea_score, organization_score, style_score = self.f_model.evaluate(corrected_text)
             grade += round(self.rubric['model'] * model_score)
 
         # Check for the number of references are missing
@@ -302,6 +312,10 @@ class Grade:
             output += feedback.keyword_feedback(key_points, self.rubric['key'])
         if self.rubric['length'] is not None:
             output += feedback.length_feedback(length_score)
+        if self.rubric['model'] is not None:
+            output += feedback.idea_feedback(idea_score)
+            output += feedback.organization_feedback(organization_score)
+            output += feedback.style_feedback(style_score)
         if self.rubric['format'] is not None:
             output += feedback.format_feedback(format_bool)
         if self.rubric['reference'] is not None:
@@ -322,8 +336,11 @@ class Grade:
             return None, None, None
 
     # Call this function to retrain the model
-    def retrain(self, file_path):
+    def retrain_score(self, file_path):
         self.model.train_and_test(file_path)
+
+    def retrain_feedback(self, file_path):
+        self.f_model.train_and_test(file_path)
 
     # access to format function through Grade.py
     def update_style(self, filepath, style):
