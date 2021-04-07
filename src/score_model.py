@@ -10,6 +10,7 @@ import score_model_helper
 from sklearn.metrics import cohen_kappa_score
 from sklearn.model_selection import KFold
 
+
 # This class contains the model for scoring the essay, and includes functions
 # for setting up and training the model.
 class ScoreModel:
@@ -265,9 +266,9 @@ class FeedbackModel:
             test_data_vecs = score_model_helper.array_and_reshape(test_data_vecs)
 
             # Train LSTM model
-            self.idea_model.fit(train_data_vecs, idea_train, batch_size=BWRD, epochs=2)
-            self.organization_model.fit(train_data_vecs, organization_train, batch_size=16, epochs=2)
-            self.style_model.fit(train_data_vecs, style_train, batch_size=BWRD, epochs=2)
+            self.idea_model.fit(train_data_vecs, idea_train, batch_size=64, epochs=2)
+            self.organization_model.fit(train_data_vecs, organization_train, batch_size=64, epochs=2)
+            self.style_model.fit(train_data_vecs, style_train, batch_size=64, epochs=2)
 
             # Test LSTM model on test data
             idea_pred = self.idea_model.predict(test_data_vecs)
