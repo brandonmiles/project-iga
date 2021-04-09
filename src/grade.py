@@ -3,38 +3,64 @@ import keywords
 import feedback
 import format
 import references
-from score_model import ScoreModel
+from score_model import ScoreModel, IdeaModel, OrganizationModel, StyleModel
 from pdfminer.high_level import extract_text
 
-STYLE_SKELETON = {'font': None, 'size': None, 'line_spacing': None, 'after_spacing': None, 'before_spacing': None,
-                  'page_width': None, 'page_height': None, 'left_margin': None, 'bottom_margin': None,
-                  'right_margin': None, 'top_margin': None, 'header': None, 'footer': None, 'gutter': None}
-
+# Every key represents an area where points can be lost on the essay, by leaving a key as None, the section will not be
+# graded, changing it to an int will cause a maximum amount of the int number of points to be taken off
 RUBRIC_SKELETON = {'grammar': None, 'key': None, 'length': None, 'format': None, 'model': None, 'reference': None}
 
-WEIGHTS_SKELETON = {'grammar': None, 'allowed_mistakes': None, 'key_max': None, 'key_min': None, 'word_min': None,
-                    'word_max': None, 'page_min': None, 'page_max': None, 'format': None, 'reference': None}
+WEIGHTS_SKELETON = {'grammar': None,  # How many points are lost for every grammar and spelling mistake
+                    'allowed_mistakes': None,  # How many grammar and spelling mistakes are allowed before losing points
+                    'key_max': None,  # The number of key words needed to get full credit
+                    'key_min': None,  # The number of key words at minimum are needed before you lose all credit
+                    'word_min': None,  # The number of words minimum needed or else you lose all credit
+                    'word_max': None,  # The number of words maximum before you lose half credit
+                    'page_min': None,  # The number of pages minimum before you lose all credit, only applicable to docx
+                    'page_max': None,
+                    'format': None,  # The number of points lost for every format error, only applicable to docx
+                    'reference': None}  # The number of points lost for every missing reference
+
+
+# Use to get the dictionary structure that defines the style
+def get_style():
+    return format.get_style()
+
+
+# Use to get the dictionary structure that defines the rubric
+def get_rubric():
+    return RUBRIC_SKELETON
+
+
+# Use to get the dictionary structure that defines the rubric
+def get_weights():
+    return WEIGHTS_SKELETON
 
 
 class Grade:
     # Technically the last field can be voided if you are either not grading format or only using the raw text function
     def __init__(self, rubric, weights, dictionary_path='../data/dictionary.csv', style=None,
                  style_path='../data/standard.json'):
-        self.rubric = rubric
-        self.weights = weights
+        # Creating the models
         self.model = ScoreModel()
-        self.idea_model = ScoreModel(name="idea")
-        self.organization_model = ScoreModel(name="organization")
-        self.style_model = ScoreModel(name="style")
+        self.idea_model = IdeaModel()
+        self.organization_model = OrganizationModel()
+        self.style_model = StyleModel()
+        # These are left empty until something is done otherwise
+        self.style = get_style()
+        self.words = keywords.KeyWords()
 
+        # Storing the given rubric if it is correct
         if set(rubric.keys()) == set(RUBRIC_SKELETON.keys()):
             self.rubric = rubric
         else:
             raise Exception("Given rubric keys do not match skeleton keys")
+        # Storing the given weights if it is correct
         if set(weights) == set(WEIGHTS_SKELETON.keys()):
             self.weights = weights
         else:
             raise Exception("Given weight keys do not match skeleton keys")
+        # Storing the given style if it is correct or retrieving the file
         if style is not None:
             if set(style.keys() == set(STYLE_SKELETON.keys())):
                 self.style = style
@@ -43,7 +69,7 @@ class Grade:
         else:
             if style_path is not None:
                 self.style = format.get_format_file(style_path)
-
+        # Getting the keyword list if a file path was given
         if dictionary_path is not None:
             try:
                 self.words = keywords.KeyWords(dictionary_path)
@@ -55,14 +81,17 @@ class Grade:
         grade, page, word = 100, None, None
         debug, output, t = "", "", ""
 
+        # You cannot give both or neither raw text and filepath
         if (text is None and filepath is None) or (text is not None and filepath is not None):
             return None, None, None
 
+        # If no text is given, then the filepath was
         if text is not None:
             t = text
         else:
             f = filepath.split('.')
 
+            # File must be a docx or doc
             if f[len(f) - 1] == "docx" or f[len(f) - 1] == "doc":
                 try:
                     word = format.Format(filepath)
@@ -70,6 +99,7 @@ class Grade:
                     page = word.get_page_count()
                 except FileNotFoundError:
                     return None, None, None
+            # File must be a pdf
             if f[len(f) - 1] == "pdf":
                 try:
                     t = extract_text(filepath)
@@ -77,32 +107,44 @@ class Grade:
                     t = t.replace("\n\n", " ").replace("  ", " ").replace("  ", " ")
                 except FileNotFoundError:
                     return None, None, None
+            # File must be a txt
+            if f[f(len(f) - 1)] == "txt":
+                try:
+                    t = open(str(filepath), 'r').read()
+                except FileNotFoundError:
+                    return None, None, None
 
+        # Run the grammar and spelling check
         p, corrected_text, d, o = self.grade_grammar(t)
         grade -= p
         debug += d
         output += o
 
+        # Run the keyword check
         p, d, o = self.grade_key(corrected_text)
         grade -= p
         debug += d
         output += o
 
+        # Run the length check
         p, d, o = self.grade_length(corrected_text, page)
         grade -= p
         debug += d
         output += o
 
+        # Run the format check
         p, d, o = self.grade_format(word)
         grade -= p
         debug += d
         output += o
 
+        # Run the model check
         p, d, o = self.grade_model(corrected_text)
         grade -= p
         debug += d
         output += o
 
+        # Run the reference check
         p, d, o = self.grade_reference(corrected_text)
         grade -= p
         debug += d
@@ -115,6 +157,7 @@ class Grade:
         points = 0
         debug, output = "", ""
 
+        # Need corrected text for other functions, so always run
         corrections, corrected_text = grammar_check.number_of_errors(text)
         if self.rubric['grammar'] is not None:
             mistakes = len(corrections)
@@ -299,18 +342,15 @@ class Grade:
         return points, debug, output
 
     # Call this function to retrain the model
-    def retrain_model(self, file_path, name=""):
+    def retrain_model(self, filepath, name="score"):
         if name.lower() == "idea":
-            print("--------IDEA---------")
-            self.idea_model.train_and_test(file_path)
+            self.idea_model.load_data(filepath)
         if name.lower() == "organization":
-            print("--------ORGANIZATION---------")
-            self.organization_model.train_and_test(file_path)
+            self.organization_model.load_data(filepath)
         if name.lower() == "style":
-            print("--------STYLE---------")
-            self.style_model.train_and_test(file_path)
-        if name.lower() != "idea" and name.lower() != "organization" and name.lower() != "style":
-            self.model.train_and_test(file_path)
+            self.style_model.load_data(filepath)
+        if name.lower() == "score":
+            self.model.load_data(filepath)
 
     # Change the style used while replacing the old style stored in the filepath if supplied
     def update_style(self, style, filepath=None):
@@ -327,3 +367,34 @@ class Grade:
         if filepath is not None:
             self.style = format.get_format_file(filepath)
         return self.style
+
+    def get_rubric(self):
+        return self.rubric
+
+    def update_rubric(self, rubric):
+        if set(rubric.keys()) == set(RUBRIC_SKELETON.keys()):
+            self.rubric = rubric
+            return True
+        return False
+
+    def get_weights(self):
+        return self.weights
+
+    def update_weights(self, weights):
+        if set(weights) == set(WEIGHTS_SKELETON.keys()):
+            self.weights = weights
+            return True
+        return False
+
+    def get_keywords(self):
+        return self.words
+
+    def add_keyword(self, word):
+        return self.words.add_keyword(word)
+
+    def remove_keyword(self, word):
+        return self.words.remove_keyword(word)
+
+    def clear_keywords(self):
+        self.words = keywords.KeyWords()
+        return True

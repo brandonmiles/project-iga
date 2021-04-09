@@ -36,23 +36,27 @@ class KeyWords:
         if word.lower() in keys:
             return True
 
-        try:
-            keys = keys.append(word.lower())
-            open(self.filepath, 'w').write(keys)
-        except PermissionError:
-            return False
+        keys.append(word.lower())
+        if self.filepath is not None:
+            try:
+                open(self.filepath, 'w').write(keys)
+            except PermissionError:
+                return False
         self.keys = keys
         return True
 
     # Remove a key word from the dictionary
     def remove_keyword(self, word):
         keys = self.keys
+        if word.lower() not in keys:
+            return True
         while word.lower() in keys:
             keys.remove(word.lower())
 
-        try:
-            open(self.filepath, 'w').write(keys)
-        except FileNotFoundError:
-            return False
+        if self.filepath is not None:
+            try:
+                open(self.filepath, 'w').write(keys)
+            except FileNotFoundError:
+                return False
         self.keys = keys
         return True

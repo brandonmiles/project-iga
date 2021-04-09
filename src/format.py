@@ -4,6 +4,25 @@ import json
 
 WORD_NAMESPACE = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
 WORD_PROPERTIES = '{http://schemas.openxmlformats.org/officeDocument/2006/extended-properties}'
+STYLE_SKELETON = {'font': None,  # This should be a list of the font names
+                  'size': None,  # This should be the allowed font size
+                  'line_spacing': None,  # This is an float that defines the spacing between every line
+                  'after_spacing': None,  # This is a float that defines the spacing after every paragraph
+                  'before_spacing': None,  # This is a float that defines the spacing before every paragraph
+                  'page_width': None,  # This is the page width in inches
+                  'page_height': None,
+                  'left_margin': None,  # The page margin size in inches
+                  'bottom_margin': None,
+                  'right_margin': None,
+                  'top_margin': None,
+                  'header': None,  # The size of the header space in inches
+                  'footer': None,
+                  'gutter': None}
+
+
+# Get the dictionary structure for the style
+def get_style():
+    return STYLE_SKELETON
 
 
 # Get the style format from a JSON file
@@ -26,6 +45,9 @@ def get_format_file(filepath):
 
 # Store the style format as a JSON for later use
 def update_format_file(filepath, style):
+    if set(style.keys()) != set(STYLE_SKELETON.keys()):
+        return False
+
     try:
         json_obj = json.dumps(style, indent=1)
         data = open(filepath, 'w')
@@ -37,7 +59,6 @@ def update_format_file(filepath, style):
 
 
 # NOTES: Know these conversions
-# Line Spacing: 240 = 1.0 line spacing
 # Font Sizes: 24 = 12 pt font
 # Margins and Indent: 1440 = 1 inch
 class Format:

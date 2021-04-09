@@ -10,115 +10,41 @@ import preprocessing
 import score_model_helper
 from sklearn.metrics import cohen_kappa_score
 from sklearn.model_selection import KFold
+from abc import ABC, abstractmethod
 
 
 # This class contains the model for scoring the essay, and includes functions
 # for setting up and training the model.
-class ScoreModel:
+class Model(ABC):
     # Initialize the model with two LSTM layers and one Dense layer.
     # If you do not know what a LSTM is, see here:
     # https://colah.github.io/posts/2015-08-Understanding-LSTMs/.
-    def __init__(self, name=""):
-        if name.lower() == "idea":
-            self.name = "Idea Model"
-            self.model = Sequential()
-            self.model.add(LSTM(300, dropout=0.4, recurrent_dropout=0.4, input_shape=[1, 300], return_sequences=True))
-            self.model.add(LSTM(64, recurrent_dropout=0.4))
-            self.model.add(Dropout(0.5))
-            self.model.add(Dense(1, activation='relu'))
-            self.model.compile(loss='mean_squared_error', optimizer='rmsprop', metrics=['accuracy', 'mae'])
-            self.num_features = 300
-            self.min_word_count = 40
-            self.num_workers = 4
-            self.context = 10
-            self.downsampling = 1e-3
-        if name.lower() == "organization":
-            self.name = "Organization Model"
-            self.model = Sequential()
-            self.model.add(LSTM(300, dropout=0.4, recurrent_dropout=0.4, input_shape=[1, 300], return_sequences=True))
-            self.model.add(LSTM(64, recurrent_dropout=0.4))
-            self.model.add(Dropout(0.5))
-            self.model.add(Dense(1, activation='relu'))
-            self.model.compile(loss='mean_squared_error', optimizer='rmsprop', metrics=['accuracy', 'mae'])
-            self.num_features = 300
-            self.min_word_count = 40
-            self.num_workers = 4
-            self.context = 10
-            self.downsampling = 1e-3
-        if name.lower() == "style":
-            self.name = "Style Model"
-            self.model = Sequential()
-            self.model.add(LSTM(300, dropout=0.4, recurrent_dropout=0.4, input_shape=[1, 300], return_sequences=True))
-            self.model.add(LSTM(64, recurrent_dropout=0.4))
-            self.model.add(Dropout(0.5))
-            self.model.add(Dense(1, activation='relu'))
-            self.model.compile(loss='mean_squared_error', optimizer='rmsprop', metrics=['accuracy', 'mae'])
-            self.num_features = 300
-            self.min_word_count = 40
-            self.num_workers = 4
-            self.context = 10
-            self.downsampling = 1e-3
-        if name.lower() != "idea" and name.lower() != "organization" and name.lower() != "style":
-            self.name = "Score Model"
-            self.model = Sequential()
-            self.model.add(LSTM(300, dropout=0.4, recurrent_dropout=0.4, input_shape=[1, 300], return_sequences=True))
-            self.model.add(LSTM(64, recurrent_dropout=0.4))
-            self.model.add(Dropout(0.5))
-            self.model.add(Dense(1, activation='relu'))
-            self.model.compile(loss='mean_squared_error', optimizer='rmsprop', metrics=['accuracy', 'mae'])
-            self.num_features = 300
-            self.min_word_count = 40
-            self.num_workers = 4
-            self.context = 10
-            self.downsampling = 1e-3
+    def __init__(self):
+        self.num_features = 300
+        self.min_word_count = 40
+        self.num_workers = 4
+        self.context = 10
+        self.down_sampling = 1e-3
+        self.filepath = None
+        self.model = None
+
+    @abstractmethod
+    def load_data(self, filepath):
+        pass
 
     # Train the model to prime it for scoring essays, then test it using
     # an evaluation metric (in this case, Cohen's kappa coefficient)
-    def train_and_test(self, data_loc):
+    def train_and_test(self, x, y):
         cv = KFold(n_splits=5, shuffle=True)
-        y = pandas.DataFrame(data=None, columns=['normal'], dtype='float')
 
-        # Get only the essays from the essay set you will be grading against
-        x = score_model_helper.get_dataframe(data_loc)  # Training data
+        if x is None or y is None:
+            return False
 
-        if self.name == "Score Model":
-            for i in x.index.values:
-                set_number = x.loc[i, 'essay_set']
-                if set_number == 1:
-                    y.loc[i, 'normal'] = (x.loc[i, 'domain1_score'] - 2) / 10
-                if set_number == 2:
-                    y.loc[i, 'normal'] = (x.loc[i, 'domain1_score'] - 1) / 5
-                if set_number == 3:
-                    y.loc[i, 'normal'] = x.loc[i, 'domain1_score'] / 3
-                if set_number == 4:
-                    y.loc[i, 'normal'] = x.loc[i, 'domain1_score'] / 3
-                if set_number == 5:
-                    y.loc[i, 'normal'] = x.loc[i, 'domain1_score'] / 4
-                if set_number == 6:
-                    y.loc[i, 'normal'] = x.loc[i, 'domain1_score'] / 4
-                if set_number == 7:
-                    y.loc[i, 'normal'] = x.loc[i, 'domain1_score'] / 30
-                if set_number == 8:
-                    y.loc[i, 'normal'] = x.loc[i, 'domain1_score'] / 60
-        else:
-            if self.name == "Idea Model":
-                j = 0
-            else:
-                if self.name == "Organization Model":
-                    j = 1
-                else:
-                    j = 2
+        if set(x.index.values) != set(y.index.values):
+            return False
 
-            for i in x.index.values:
-                comment = x.loc[i, 'comments'].split(',')
-
-                if comment[j].find('1') != -1:
-                    y.loc[i, 'normal'] = 0.0
-                else:
-                    if comment[j].find('2') != -1:
-                        y.loc[i, 'normal'] = 0.5
-                    else:
-                        y.loc[i, 'normal'] = 1.0
+        if 'essay' not in x.keys() or 'normal' not in y.keys():
+            return False
 
         count = 1
         # Using the "split" function, we split the training data into
@@ -140,7 +66,7 @@ class ScoreModel:
             # Word2Vec associates each word to a vector (a list of numbers), such that
             # two words with similar vectors are semantically similar.
             model = Word2Vec(sentences, workers=self.num_workers, size=self.num_features, min_count=self.min_word_count,
-                             window=self.context, sample=self.downsampling)
+                             window=self.context, sample=self.down_sampling)
             model.init_sims(replace=True)
 
             # Preprocesses each essay into a word list
@@ -156,7 +82,7 @@ class ScoreModel:
             test_data_vecs = score_model_helper.array_and_reshape(test_data_vecs)
 
             # Train LSTM model
-            self.model.fit(train_data_vecs, y_train.values, batch_size=64, epochs=2)
+            self.model.fit(train_data_vecs, y_train.loc[:, 'normal'].values, batch_size=64, epochs=2)
 
             # Test LSTM model on test data
             y_pred = self.model.predict(test_data_vecs)
@@ -166,20 +92,14 @@ class ScoreModel:
 
             # Save the final iteration of the trained model
             if count == 5:
-                if self.name == "Idea Model":
-                    self.model.save('./model_weights/final_idea_lstm.h5')
-                if self.name == "Organization Model":
-                    self.model.save('./model_weights/final_organization_lstm.h5')
-                if self.name == "Style Model":
-                    self.model.save('./model_weights/final_style_lstm.h5')
-                if self.name == "Score Model":
-                    self.model.save('./model_weights/final_lstm.h5')
+                self.model.save(self.filepath)
 
             # Evaluate the model using Cohen's kappa coefficient
-            result = cohen_kappa_score(y_test.values, y_pred, weights='quadratic')
+            result = cohen_kappa_score(y_test.loc[:, 'normal'].values, y_pred, weights='quadratic')
             print("Cohen's kappa coefficient: {}".format(result))
 
             count += 1
+        return True
 
     # Evaluate the input 'essay' on our trained model. See 'score_model_helper' file
     # for explanations of what the functions involved do.
@@ -187,15 +107,142 @@ class ScoreModel:
         tk = score_model_helper.load_tokenizer()
         text_arr = score_model_helper.preprocess(essay, tk)
         text_arr = score_model_helper.array_and_reshape(text_arr)
-
-        if self.name == "Idea Model":
-            self.model.load_weights('./model_weights/final_idea_lstm.h5')
-        if self.name == "Organization Model":
-            self.model.load_weights('./model_weights/final_organization_lstm.h5')
-        if self.name == "Style Model":
-            self.model.load_weights('./model_weights/final_style_lstm.h5')
-        if self.name == "Score Model":
-            self.model.load_weights('./model_weights/final_lstm.h5')
-
+        self.model.load_weights(self.filepath)
         score = self.model.predict(text_arr)[0, 0]  # Predict score of input essay
         return score
+
+
+class ScoreModel(Model):
+    def __init__(self):
+        super().__init__()
+        self.model = Sequential()
+        self.model.add(LSTM(300, dropout=0.4, recurrent_dropout=0.4, input_shape=[1, 300], return_sequences=True))
+        self.model.add(LSTM(64, recurrent_dropout=0.4))
+        self.model.add(Dropout(0.5))
+        self.model.add(Dense(1, activation='relu'))
+        self.model.compile(loss='mean_squared_error', optimizer='rmsprop', metrics=['accuracy', 'mae'])
+        self.filepath = './model_weights/final_lstm.h5'
+
+    def load_data(self, filepath):
+        y = pandas.DataFrame(np.empty(0, dtype=[('essay_id', 'int'), ('normal', 'float32')]))
+
+        # Get only the essays from the essay set you will be grading against
+        x = score_model_helper.get_dataframe(filepath)  # Training data
+
+        for i in x.index.values:
+            set_number = x.loc[i, 'essay_set']
+            y.loc[i, 'essay_id'] = x.loc[i, 'essay_id']
+            if set_number == 1:
+                y.loc[i, 'normal'] = (x.loc[i, 'domain1_score'] - 2) / 10
+            if set_number == 2:
+                y.loc[i, 'normal'] = (x.loc[i, 'domain1_score'] - 1) / 5
+            if set_number == 3:
+                y.loc[i, 'normal'] = x.loc[i, 'domain1_score'] / 3
+            if set_number == 4:
+                y.loc[i, 'normal'] = x.loc[i, 'domain1_score'] / 3
+            if set_number == 5:
+                y.loc[i, 'normal'] = x.loc[i, 'domain1_score'] / 4
+            if set_number == 6:
+                y.loc[i, 'normal'] = x.loc[i, 'domain1_score'] / 4
+            if set_number == 7:
+                y.loc[i, 'normal'] = x.loc[i, 'domain1_score'] / 30
+            if set_number == 8:
+                y.loc[i, 'normal'] = x.loc[i, 'domain1_score'] / 60
+
+        return self.train_and_test(x, y)
+
+
+class IdeaModel(Model):
+    def __init__(self):
+        super().__init__()
+        self.model = Sequential()
+        self.model.add(LSTM(300, dropout=0.4, recurrent_dropout=0.4, input_shape=[1, 300], return_sequences=True))
+        self.model.add(LSTM(64, recurrent_dropout=0.4))
+        self.model.add(Dropout(0.5))
+        self.model.add(Dense(1, activation='relu'))
+        self.model.compile(loss='mean_squared_error', optimizer='rmsprop', metrics=['accuracy', 'mae'])
+        self.filepath = './model_weights/final_idea_lstm.h5'
+
+    def load_data(self, filepath):
+        y = pandas.DataFrame(np.empty(0, dtype=[('essay_id', 'int'), ('normal', 'float32')]))
+
+        # Get only the essays from the essay set you will be grading against
+        x = score_model_helper.get_dataframe(filepath)  # Training data
+
+        for i in x.index.values:
+            comment = x.loc[i, 'comments'].split(',')[0]
+            y.loc[i, 'essay_id'] = x.loc[i, 'essay_id']
+
+            if comment.find('1') != -1:
+                y.loc[i, 'normal'] = 0.0
+            else:
+                if comment.find('2') != -1:
+                    y.loc[i, 'normal'] = 0.5
+                else:
+                    y.loc[i, 'normal'] = 1.0
+
+        return self.train_and_test(x, y)
+
+
+class OrganizationModel(Model):
+    def __init__(self):
+        super().__init__()
+        self.model = Sequential()
+        self.model.add(LSTM(300, dropout=0.4, recurrent_dropout=0.4, input_shape=[1, 300], return_sequences=True))
+        self.model.add(LSTM(64, recurrent_dropout=0.4))
+        self.model.add(Dropout(0.5))
+        self.model.add(Dense(1, activation='relu'))
+        self.model.compile(loss='mean_squared_error', optimizer='rmsprop', metrics=['accuracy', 'mae'])
+        self.filepath = './model_weights/final_organization_lstm.h5'
+
+    def load_data(self, filepath):
+        y = pandas.DataFrame(np.empty(0, dtype=[('essay_id', 'int'), ('normal', 'float32')]))
+
+        # Get only the essays from the essay set you will be grading against
+        x = score_model_helper.get_dataframe(filepath)  # Training data
+
+        for i in x.index.values:
+            comment = x.loc[i, 'comments'].split(',')[1]
+            y.loc[i, 'essay_id'] = x.loc[i, 'essay_id']
+
+            if comment.find('1') != -1:
+                y.loc[i, 'normal'] = 0.0
+            else:
+                if comment.find('2') != -1:
+                    y.loc[i, 'normal'] = 0.5
+                else:
+                    y.loc[i, 'normal'] = 1.0
+
+        return self.train_and_test(x, y)
+
+
+class StyleModel(Model):
+    def __init__(self):
+        super().__init__()
+        self.model = Sequential()
+        self.model.add(LSTM(300, dropout=0.4, recurrent_dropout=0.4, input_shape=[1, 300], return_sequences=True))
+        self.model.add(LSTM(64, recurrent_dropout=0.4))
+        self.model.add(Dropout(0.5))
+        self.model.add(Dense(1, activation='relu'))
+        self.model.compile(loss='mean_squared_error', optimizer='rmsprop', metrics=['accuracy', 'mae'])
+        self.filepath = './model_weights/final_style_lstm.h5'
+
+    def load_data(self, filepath):
+        y = pandas.DataFrame(np.empty(0, dtype=[('essay_id', 'int'), ('normal', 'float32')]))
+
+        # Get only the essays from the essay set you will be grading against
+        x = score_model_helper.get_dataframe(filepath)  # Training data
+
+        for i in x.index.values:
+            comment = x.loc[i, 'comments'].split(',')[2]
+            y.loc[i, 'essay_id'] = x.loc[i, 'essay_id']
+
+            if comment.find('1') != -1:
+                y.loc[i, 'normal'] = 0.0
+            else:
+                if comment.find('2') != -1:
+                    y.loc[i, 'normal'] = 0.5
+                else:
+                    y.loc[i, 'normal'] = 1.0
+
+        return self.train_and_test(x, y)
