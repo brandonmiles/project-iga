@@ -90,12 +90,12 @@ def format_feedback(bool_list):
 
 # Returns feedback on the number of missing references
 def reference_feedback(score):
-    text = "All references found\n"
+    text = "Some references were missing\n"
 
-    if score < 1:
+    if score == 0:
+        text = "All references found\n"
+    if score == 1:
         text = "Failed to properly reference a majority of the text\n"
-    if score < 2:
-        text = "Some references were missing\n"
 
     return text
 
