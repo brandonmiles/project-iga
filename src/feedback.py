@@ -1,15 +1,14 @@
-def grammar_feedback(score, score_max):
-    score = score / score_max * 4
-
-    if score < 1:
+# Takes a score of 0, 1, 2, or 3, moving from positive to negative
+def grammar_feedback(score):
+    if score == 3:
         text = "Ineffective use of conventions of Standard English for grammar, usage, spelling, capitalization, " \
                "and punctuation.\n"
     else:
-        if score < 2:
+        if score == 2:
             text = "Limited use of conventions of Standard English for grammar, usage, spelling, capitalization, " \
                    "and punctuation for the grade level.\n"
         else:
-            if score < 3:
+            if score == 1:
                 text = "Adequate use of conventions of Standard English for grammar, usage, spelling, capitalization," \
                        " and punctuation for the grade level.\n"
             else:
@@ -19,16 +18,15 @@ def grammar_feedback(score, score_max):
     return text
 
 
-def keyword_feedback(score, score_max):
-    score = score / score_max * 4
-
-    if score < 1:
+# Takes a score of 0, 1, 2, or 3, moving from positive to negative
+def keyword_feedback(score):
+    if score == 3:
         text = "Failed to include any keywords pertaining to the topic.\n"
     else:
-        if score < 2:
+        if score == 2:
             text = "Only a few of the expected keywords used that are relevant to the subject.\n"
         else:
-            if score < 3:
+            if score == 1:
                 text = "Frequently used keywords relevant to the paper's topic.\n"
             else:
                 text = "Excellent use of topic keywords.\n"
@@ -37,12 +35,13 @@ def keyword_feedback(score, score_max):
 
 
 def length_feedback(score):
-    text = "Failed to reduce the expected word count of the essay down to the word count maximum.\n"
-
-    if score == 0:
+    if score == 2:
         text = "Failed to meet the minimum expected number of words for the essay.\n"
-    if score == 1:
-        text = "Remained within the expected bounds of the word count.\n"
+    else:
+        if score == 1:
+            text = "Failed to reduce the expected word count of the essay down to the word count maximum.\n"
+        else:
+            text = "Remained within the expected bounds of the word count.\n"
 
     return text
 
@@ -90,8 +89,7 @@ def format_feedback(bool_list):
 
 
 # Returns feedback on the number of missing references
-def reference_feedback(score, score_max):
-    score = score / score_max * 3
+def reference_feedback(score):
     text = "All references found\n"
 
     if score < 1:

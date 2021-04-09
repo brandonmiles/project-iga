@@ -1,21 +1,27 @@
-import pandas as pd
+import os
+import pandas
 from grade import Grade
-import nltk
 
 
 # How many points each graded section is worth, use None to remove from the rubric
 rubric = {'grammar': 20, 'key': 10, 'length': 20, 'format': 20, 'model': 20, 'reference': 10}
 # How easily or hard it is to lose points from each sections, use None to chose between word count and page count
-weights = {'grammar': 1, 'key': 5, 'key_min': 2, 'word_min': 300, 'word_max': None, 'page_min': None, 'page_max': None,
-           'format': 5, 'reference': 5}
+weights = {'grammar': 1, 'allowed_mistakes': 3, 'key_max': 2, 'key_min': 0, 'word_min': 300, 'word_max': None,
+           'page_min': None, 'page_max': None, 'format': 5, 'reference': 5}
 g = Grade(rubric, weights)
 
 try:
-    test_data = pd.read_csv('../data/test_set.tsv', sep='\t', encoding='ISO-8859-1')
+    test_data = pandas.read_csv('../data/test_set.tsv', sep='\t', encoding='ISO-8859-1')
 
-    # g.retrain_score('../data/training_set.tsv')
-
-    g.retrain_feedback('../data/comment_set.csv')
+    # If the weights don't exist, then make them exist by training them models
+    if not os.path.exists('./model_weights/final_lstm.h5'):
+        g.retrain_model('../data/training_set.tsv')
+    if not os.path.exists('./model_weights/final_idea_lstm.h5'):
+        g.retrain_model('../data/comment_set.tsv', "idea")
+    if not os.path.exists('./model_weights/final_organization_lstm.h5'):
+        g.retrain_model('../data/comment_set.tsv', "organization")
+    if not os.path.exists('./model_weights/final_style_lstm.h5'):
+        g.retrain_model('../data/comment_set.tsv', "style")
 
     # Grade each essay
     a = 0
@@ -23,8 +29,8 @@ try:
         a += 1
         print("-----------------------------------------------------------------------------------------------------\n")
         print("Essay: ", a)
-        db, gd, out = g.get_grade_raw(i)
-        print(db, "Grade:", gd, "\n", out)
+        db, gd, out = g.get_grade(text=i)
+        print(db + "Grade: " + str(gd) + "\n" + out)
 
 except FileNotFoundError:
-    print("File does not exist")
+    print("../data/test_set.tsv not found")

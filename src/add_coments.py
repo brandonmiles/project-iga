@@ -3,7 +3,7 @@ import pandas
 # Change this to match your file path
 FILE_NAME = '../data/feedback/nathan.csv'
 
-FILE_COMMIT = '../data/comment_set.csv'
+FILE_COMMIT = '../data/comment_set.tsv'
 
 PROMPT_1 = "Write a letter to your local newspaper in which you state your opinion on the effects computers have on " \
            "people. Persuade the readers to agree with you."
@@ -351,7 +351,7 @@ while True:
                 dataset = dataset.append(j)
             else:
                 dataset.loc[dataset['essay_id'] == j['essay_id'], 'comments'] = j['comments']
-        dataset.to_csv(FILE_COMMIT, sep=',', index=False, encoding='ISO-8859-1')
+        dataset.to_csv(FILE_COMMIT, sep='\t', index=False, encoding='ISO-8859-1')
         break
     if num == 'correct':
         for i in range(len(stuff)):
