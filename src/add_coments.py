@@ -3,6 +3,8 @@ import pandas
 # Change this to match your file path
 FILE_NAME = '../data/feedback/nathan.csv'
 
+FILE_COMMIT = '../data/comment_set.tsv'
+
 PROMPT_1 = "Write a letter to your local newspaper in which you state your opinion on the effects computers have on " \
            "people. Persuade the readers to agree with you."
 
@@ -328,14 +330,53 @@ if 'comments' not in stuff.keys():
 
 while True:
     num = input("\nYou can enter an essay id, [0] to save & exit, [TD] for essays to do, [P-(essay_set)] for each essay"
-                " prompt, or [T-(essay_set)] if the essay prompt has an associated text: ")
+                " prompt, or [T-(essay_set)] if the essay prompt has an associated text. If you use the [commit] "
+                "command, it will copy your work to the aggregate comment file, comment_set.csv : ")
+    num = num.lower()
     if num == '0':
         break
-    if num == 'TD':
+    if num == 'td':
         print(stuff.loc[stuff['comments'].isnull()]['essay_id'].values)
         continue
+    if num == 'commit':
+        print("Copying data to ", FILE_COMMIT)
+        dataset = pandas.read_csv(FILE_COMMIT, sep=',', encoding='ISO-8859-1')
+        dataset = dataset.copy()
 
-    if len(num) == 3 and num[0:2] == 'P-' and 0 < int(num[2]) < 9:
+        for i in range(len(stuff)):
+            j = stuff.loc[i]
+            if j['comments'] is None:
+                continue
+            if dataset.loc[dataset['essay_id'] == j['essay_id']].empty:
+                dataset = dataset.append(j)
+            else:
+                dataset.loc[dataset['essay_id'] == j['essay_id'], 'comments'] = j['comments']
+        dataset.to_csv(FILE_COMMIT, sep='\t', index=False, encoding='ISO-8859-1')
+        break
+    if num == 'correct':
+        for i in range(len(stuff)):
+            text = stuff.loc[i]['comments'].split(",")
+            if text[0] == 'ID1':
+                text[0] = 'ID3'
+            else:
+                if text[0] == 'ID3':
+                    text[0] = 'ID1'
+            if text[1] == 'ORG1':
+                text[1] = 'ORG3'
+            else:
+                if text[1] == 'ORG3':
+                    text[1] = 'ORG1'
+            if text[2] == 'STY1':
+                text[2] = 'STY3'
+            else:
+                if text[2] == 'STY3':
+                    text[2] = 'STY1'
+            done = text[0] + "," + text[1] + "," + text[2]
+
+            stuff.loc[i, 'comments'] = done
+        stuff.to_csv(FILE_NAME, sep=',', index=False, encoding='ISO-8859-1')
+
+    if len(num) == 3 and num[0:2] == 'p-' and 0 < int(num[2]) < 9:
         i = int(num[2])
         if i == 1:
             print(PROMPT_1)
@@ -354,7 +395,7 @@ while True:
         if i == 8:
             print(PROMPT_8)
         continue
-    if len(num) == 3 and num[0:2] == 'T-' and 2 < int(num[2]) < 7:
+    if len(num) == 3 and num[0:2] == 't-' and 2 < int(num[2]) < 7:
         i = int(num[2])
         if i == 3:
             print(PROMPT_3_TEXT)

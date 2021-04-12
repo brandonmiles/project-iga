@@ -4,12 +4,31 @@ import json
 
 WORD_NAMESPACE = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
 WORD_PROPERTIES = '{http://schemas.openxmlformats.org/officeDocument/2006/extended-properties}'
+STYLE_SKELETON = {'font': None,  # This should be a list of the font names
+                  'size': None,  # This should be the allowed font size
+                  'line_spacing': None,  # This is an float that defines the spacing between every line
+                  'after_spacing': None,  # This is a float that defines the spacing after every paragraph
+                  'before_spacing': None,  # This is a float that defines the spacing before every paragraph
+                  'page_width': None,  # This is the page width in inches
+                  'page_height': None,
+                  'left_margin': None,  # The page margin size in inches
+                  'bottom_margin': None,
+                  'right_margin': None,
+                  'top_margin': None,
+                  'header': None,  # The size of the header space in inches
+                  'footer': None,
+                  'gutter': None}
+
+
+# Get the dictionary structure for the style
+def get_style():
+    return STYLE_SKELETON
 
 
 # Get the style format from a JSON file
-def get_format_file(file_path):
+def get_format_file(filepath):
     try:
-        data = open(file_path, 'r')
+        data = open(filepath, 'r')
         json_obj = json.loads(data.read())
 
         style = {'font': json_obj['font'], 'size': json_obj["size"], 'line_spacing': json_obj["line_spacing"],
@@ -21,32 +40,34 @@ def get_format_file(file_path):
                  'indent': json_obj["indent"]}
         return style
     except FileNotFoundError:
-        return None
+        raise Exception(filepath + " not found")
 
 
 # Store the style format as a JSON for later use
-def update_format_file(file_path, style):
+def update_format_file(filepath, style):
+    if set(style.keys()) != set(STYLE_SKELETON.keys()):
+        return False
+
     try:
         json_obj = json.dumps(style, indent=1)
-        data = open(file_path, 'w')
+        data = open(filepath, 'w')
         data.write(json_obj)
         return True
 
-    except FileNotFoundError:
+    except PermissionError:
         return False
 
 
 # NOTES: Know these conversions
-# Line Spacing: 240 = 1.0 line spacing
 # Font Sizes: 24 = 12 pt font
 # Margins and Indent: 1440 = 1 inch
 class Format:
 
     # Open the docx as a series of xml files
-    def __init__(self, file_name):
+    def __init__(self, filepath):
         try:
             # Opening up the needed xml documents
-            file_tree = zipfile.ZipFile(file_name)
+            file_tree = zipfile.ZipFile(filepath)
             self.document = xml.etree.ElementTree.XML(file_tree.read('word/document.xml'))
             self.font = xml.etree.ElementTree.XML(file_tree.read('word/fontTable.xml'))
             general = xml.etree.ElementTree.XML(file_tree.read('docProps/app.xml'))
@@ -92,7 +113,7 @@ class Format:
                                   'header': int(header) / 1440, 'footer': int(footer) / 1440,
                                   'gutter': int(gutter) / 1440}
         except FileNotFoundError:
-            print("File doesn't exist")
+            print(filepath + "not found")
 
     # Returns a list of all the fonts used, plus Times New Roman, Calibri and Calibri Light
     def get_font_table(self):
