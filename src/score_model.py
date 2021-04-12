@@ -1,8 +1,7 @@
-from gensim.models import KeyedVectors
-from gensim.models import Word2Vec
-from keras.layers import LSTM, Dense, Dropout
+from keras.layers import LSTM, Dense, Dropout, Embedding, GlobalMaxPooling1D
 from keras.models import Sequential
-import math
+from keras.preprocessing.text import Tokenizer
+from keras.preprocessing.sequence import pad_sequences
 import numpy as np
 import preprocessing
 import score_model_helper
@@ -13,159 +12,129 @@ from sklearn.model_selection import KFold
 # This class contains the model for scoring the essay, and includes functions
 # for setting up and training the model.
 class ScoreModel:
-    # Initialize the model with two LSTM layers and one Dense layer.
+    # Initialize the model with one Embedding layer, one LSTM layer, and two Dense layers.
     # If you do not know what a LSTM is, see here:
     # https://colah.github.io/posts/2015-08-Understanding-LSTMs/.
     def __init__(self):
+        self.tokenizer = Tokenizer()
+        self.tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/training_set.tsv')['essay'])
+        self.vocab_size = len(self.tokenizer.word_index) + 1
+
         self.model = Sequential()
-        self.model.add(LSTM(300, dropout=0.4, recurrent_dropout=0.4, input_shape=[1, 300], return_sequences=True))
-        self.model.add(LSTM(64, recurrent_dropout=0.4))
-        self.model.add(Dropout(0.5))
-        self.model.add(Dense(1, activation='relu'))
-        self.model.compile(loss='mean_squared_error', optimizer='rmsprop', metrics=['accuracy', 'mae'])
+        self.model.add(Embedding(self.vocab_size, 300, weights=[self.get_embedding_matrix()], input_length=200, trainable=False))
+        self.model.add(LSTM(128, dropout=0.3, return_sequences=True))
+        self.model.add(GlobalMaxPooling1D())
+        self.model.add(Dense(64, activation='relu'))
+        self.model.add(Dense(1, activation='sigmoid'))
+        self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', 'mae'])
         self.model.summary()
 
+    
     # Returns the model object (after it's been set up)
     def get_model(self):
         return self.model
 
+    
+    # Returns tokenizer
+    def get_tokenizer(self):
+        return self.tokenizer
+
+    
     # Train the model to prime it for scoring essays, then test it using
     # an evaluation metric (in this case, Cohen's kappa coefficient)
     def train_and_test(self, data_loc):
-        cv = KFold(n_splits=5, shuffle=True)
+        cv = KFold(n_splits=2, shuffle=True)
         results, y_pred_list = [], []  # Cohen's kappa coefficients
-        float_y = []
 
-        # Get only the essays from the essay set you will be grading against
         x = score_model_helper.get_dataframe(data_loc)  # Training data
-
-        y = x.loc[:, 'rater1_domain1'].copy()
-        y2 = x.loc[:, 'rater2_domain1']
-        s = x.loc[:, 'essay_set']
-
-        # Calculate the score of each essay based on the total of the raters
-        for i in y.index.values:
-            if not math.isnan(y2[i]):
-                y[i] += y2[i]
-
-        # Normalizing the scores
-        for i in s.index.values:
-            setnum = s[i]
-            if setnum == 1:
-                float_y.insert(i, (y[i] - 2) / 10)
-            if setnum == 2:
-                float_y.insert(i, (y[i] - 2) / 8)
-            if setnum == 3:
-                float_y.insert(i, y[i] / 6)
-            if setnum == 4:
-                float_y.insert(i, y[i] / 6)
-            if setnum == 5:
-                float_y.insert(i, y[i] / 8)
-            if setnum == 6:
-                float_y.insert(i, y[i] / 8)
-            if setnum == 7:
-                float_y.insert(i, y[i] / 30)
-            if setnum == 8:
-                float_y.insert(i, y[i] / 60)
+        y = x['domain1_score']
 
         count = 1
-        # Using the "split" function, we split the training data into
+        # Using the "split" function, we split the data into
         # two parts: one for training and the other for testing. Then
         # we iterate the train/test procedure below five times, with 
         # each iteration improving upon the last.
         for traincv, testcv in cv.split(x):
             print("\n--------Fold {}--------\n".format(count))
-            x_test, x_train = x.iloc[testcv], x.iloc[traincv]
-            y_test, y_train = np.array(float_y)[testcv], np.array(float_y)[traincv]
+            x_test, x_train, y_test, y_train = x.iloc[testcv], x.iloc[traincv], y.iloc[testcv], y.iloc[traincv] 
 
-            train_essays = x_train.loc[:, 'essay']  # Training essays
-            test_essays = x_test.loc[:, 'essay']  # Test essays
+            train_essays = x_train['essay']  # Training essays
+            test_essays = x_test['essay']  # Test essays
 
-            # Grabs all the sentences from each essay; setting up for Word2Vec
-            sentences = score_model_helper.get_sentences(train_essays)
+            # See score_model_helper.py file
+            train_essays = score_model_helper.get_clean_essays(train_essays)
+            test_essays = score_model_helper.get_clean_essays(test_essays)
 
-            # Parameters for Word2Vec model
-            num_features = 300
-            min_word_count = 40
-            num_workers = 4
-            context = 10
-            downsampling = 1e-3
+            tokenizer = self.get_tokenizer()
+            # Convert the text into a sequence of numbers (that the model can
+            # understand)
+            x_train_seq  = tokenizer.texts_to_sequences(train_essays)
+            x_test_seq = tokenizer.texts_to_sequences(test_essays)
 
-            # Initiate Word2Vec model
-            # Word2Vec associates each word to a vector (a list of numbers), such that
-            # two words with similar vectors are semantically similar.
-            model = Word2Vec(sentences, workers=num_workers, size=num_features, min_count=min_word_count,
-                             window=context, sample=downsampling)
-            model.init_sims(replace=True)
+            # Pad the sequence to be of length 200
+            x_train_seq = pad_sequences(x_train_seq, maxlen=200)
+            x_test_seq = pad_sequences(x_test_seq, maxlen=200)
 
-            # Preprocesses each essay into a word list
-            clean_train_essays = score_model_helper.get_clean_essays(train_essays)
-            clean_test_essays = score_model_helper.get_clean_essays(test_essays)
-
-            # Preprocess the essays some more; see 'preprocessing' file for details
-            train_data_vecs = preprocessing.get_avg_feature_vecs(clean_train_essays, model, num_features)
-            test_data_vecs = preprocessing.get_avg_feature_vecs(clean_test_essays, model, num_features)
-
-            # Turns vectors into np arrays and reshapes them into their proper shape
-            train_data_vecs = score_model_helper.array_and_reshape(train_data_vecs)
-            test_data_vecs = score_model_helper.array_and_reshape(test_data_vecs)
+            # Turn sequences into numpy arrays
+            x_train_seq = np.array(x_train_seq)
+            x_test_seq = np.array(x_test_seq)
 
             # Train LSTM model
             lstm_model = self.get_model()
-            lstm_model.fit(train_data_vecs, y_train, batch_size=64, epochs=2)
+            lstm_model.fit(x_train_seq, y_train.values, batch_size=128, epochs=4)
 
             # Test LSTM model on test data
-            y_pred = lstm_model.predict(test_data_vecs)
+            y_pred = self.model.predict(x_test_seq)
             y_pred = np.around(y_pred * 100)
             y_test = np.around(y_test * 100)
-            y_pred_list.append(y_pred)
 
             # Save the final iteration of the trained model
-            if count == 5:
+            if count == 2:
                 lstm_model.save('./model_weights/final_lstm.h5')
 
             # Evaluate the model using Cohen's kappa coefficient
-            result = cohen_kappa_score(y_test, y_pred, weights='quadratic')
+            result = cohen_kappa_score(y_test.values, y_pred, weights='quadratic')
             print("Cohen's kappa coefficient: {}".format(result))
-            results.append(result)
 
             count += 1
 
+    
     # Evaluate the input 'essay' on our trained model. See 'score_model_helper' file
     # for explanations of what the functions involved do.
     def evaluate(self, essay):
-        tk = score_model_helper.load_tokenizer()
+        tk = self.get_tokenizer()
         text_arr = score_model_helper.preprocess(essay, tk)
-        text_arr = score_model_helper.array_and_reshape(text_arr)
+        text_arr = np.asarray(text_arr)
         lstm_model = self.get_model()
         lstm_model.load_weights('./model_weights/final_lstm.h5')  # Get weights from trained model
         score = lstm_model.predict(text_arr)[0, 0]  # Predict score of input essay
-        return score
+        return score * 100
 
-    # Tests the 'evaluate' function on a few essays.
-    def test_evaluate(self):
-        print(self.evaluate('This is a test essay. It is only a test essay, and should only be referred to as such. '
-                            'Any attempts to characterize this test essay as anything other than a test essay will be '
-                            'met with swift punishment by the Test Essay Police (TEP).'))
-        print(self.evaluate('Dear local newspaper, I think effects computers have on people are great learning '
-                            'skills/affects because they give us time to chat with friends/new people, helps us learn '
-                            'about the globe(astronomy) and keeps us out of troble! Thing about! Dont you think so? '
-                            'How would you feel if your teenager is always on the phone with friends! Do you ever '
-                            'time to chat with your friends or buisness partner about things. Well now - theres a new '
-                            'way to chat the computer, theirs plenty of sites on the internet to do so: '
-                            '@ORGANIZATION1, @ORGANIZATION2, @CAPS1, facebook, myspace ect. Just think now while your '
-                            'setting up meeting with your boss on the computer, your teenager is having fun on the '
-                            'phone not rushing to get off cause you want to use it. How did you learn about other '
-                            'countrys/states outside of yours? Well I have by computer/internet, its a new way to '
-                            'learn about what going on in our time! You might think your child spends a lot of time '
-                            'on the computer, but ask them so question about the economy, sea floor spreading or even '
-                            'about the @DATE1 s youll be surprise at how much he/she knows. Believe it or not the '
-                            'computer is much interesting then in class all day reading out of books. If your child '
-                            'is home on your computer or at a local library, its better than being out with friends '
-                            'being fresh, or being perpressured to doing something they know isnt right. You might '
-                            'not know where your child is, @CAPS2 forbidde in a hospital bed because of a drive-by. '
-                            'Rather than your child on the computer learning, chatting or just playing games, '
-                            'safe and sound in your home or community place. Now I hope you have reached a point to '
-                            'understand and agree with me, because computers can have great effects on you or child '
-                            'because it gives us time to chat with friends/new people, helps us learn about the globe '
-                            'and believe or not keeps us out of troble. Thank you for listening.'))
+    
+    def test_evaluate():
+        return
+
+
+    # Used to build the Embedding layer
+    def get_embedding_matrix(self):
+        embeddings_index = {}
+        f = open('glove6B/glove.6B.300d.txt', encoding='utf8')
+        for line in f:
+            values = line.split()
+            word = values[0]
+            coefs = np.asarray(values[1:], dtype='float32')
+            embeddings_index[word] = coefs
+        f.close()
+
+        embedding_matrix = np.zeros((self.vocab_size, 300))
+        for word, i in self.get_tokenizer().word_index.items():
+            embedding_vector = embeddings_index.get(word)
+            if embedding_vector is not None:
+                embedding_matrix[i] = embedding_vector
+
+        return embedding_matrix
+
+
+score_model = ScoreModel()
+score_model.train_and_test('../data/training_set.tsv')
+score_model.test_evaluate()
