@@ -3,7 +3,7 @@ import keywords
 import feedback
 import format
 import references
-from feedback_model import ScoreModel, IdeaModel, OrganizationModel, StyleModel
+from score_model import ScoreModel, IdeaModel, OrganizationModel, StyleModel
 from pdfminer.high_level import extract_text
 
 # Every key represents an area where points can be lost on the essay, by leaving a key as None, the section will not be
@@ -39,7 +39,7 @@ def get_weights():
 
 class Grade:
     # Technically the last field can be voided if you are either not grading format or only using the raw text function
-    def __init__(self, rubric, weights, dictionary_path='../data/dictionary.csv', style=None,
+    def __init__(self, rubric, weights, dictionary_path='../data/dictionary.tsv', style=None,
                  style_path='../data/standard.json'):
         # Creating the models
         self.model = ScoreModel()
@@ -74,7 +74,7 @@ class Grade:
             try:
                 self.words = keywords.KeyWords(dictionary_path)
             except FileNotFoundError:
-                print(str(dictionary_path) + " not found")
+                raise Exception(str(dictionary_path) + " not found")
 
     # Specify whether you are giving raw text or a file path, will return the debug, grade, and output in that order
     def get_grade(self, text=None, filepath=None):

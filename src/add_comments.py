@@ -1,7 +1,7 @@
 import pandas
 
 # Change this to match your file path
-FILE_NAME = '../data/feedback/nathan.csv'
+FILE_NAME = '../data/feedback/gautam.csv'
 
 FILE_COMMIT = '../data/comment_set.tsv'
 
@@ -340,7 +340,7 @@ while True:
         continue
     if num == 'commit':
         print("Copying data to ", FILE_COMMIT)
-        dataset = pandas.read_csv(FILE_COMMIT, sep=',', encoding='ISO-8859-1')
+        dataset = pandas.read_csv(FILE_COMMIT, sep='\t', encoding='ISO-8859-1')
         dataset = dataset.copy()
 
         for i in range(len(stuff)):
