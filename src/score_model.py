@@ -111,7 +111,7 @@ class ScoreModel:
         return score * 100
 
     
-    def test_evaluate():
+    def test_evaluate(self):
         return
 
 
@@ -136,5 +136,5 @@ class ScoreModel:
 
 
 score_model = ScoreModel()
-score_model.train_and_test('../data/training_set.tsv')
+score_model.train_and_test('../data/training_set_n.tsv')
 score_model.test_evaluate()
