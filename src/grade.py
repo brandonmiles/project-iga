@@ -217,7 +217,7 @@ class Grade:
         debug, output = "", ""
 
         if self.rubric['model'] is not None:
-            points = self.model.evaluate(text) * 3
+            points = self.model.evaluate(text)
             idea_score = round((self.idea_model.evaluate(text) * 3) + 0.5) - 1
             organization_score = round((self.organization_model.evaluate(text) * 3) + 0.5) - 1
             style_score = round((self.style_model.evaluate(text) * 3) + 0.5) - 1
