@@ -44,8 +44,8 @@ class Grade:
         # Creating the models
         self.model = ScoreModel()
         self.idea_model = IdeaModel()
-        self.organization_model = OrganizationModel()
-        self.style_model = StyleModel()
+        self.organization_model = OrganizationModel(self.idea_model.get_embedding())
+        self.style_model = StyleModel(self.idea_model.get_embedding())
         # These are left empty until something is done otherwise
         self.style = get_style()
         self.words = keywords.KeyWords()

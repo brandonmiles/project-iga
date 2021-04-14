@@ -24,10 +24,14 @@ class Model(ABC):
         self.model = Sequential()
         self.vocab_size = None
         self.filepath = None
+        self.embedding = None
 
     @abstractmethod
-    def load_data(self, filepath):
+    def load_data(self, filepath=None):
         pass
+
+    def get_embedding(self):
+        return self.embedding
 
     # Train the model to prime it for scoring essays, then test it using
     # an evaluation metric (in this case, Cohen's kappa coefficient)
@@ -100,7 +104,8 @@ class Model(ABC):
             self.model.load_weights(self.filepath)  # Get weights from trained model
             return self.model.predict(text_arr)[0, 0]  # Predict score of input essay
         else:
-            return None
+            self.load_data()
+            return self.model.predict(text_arr)[0, 0]
 
     def get_embedding_matrix(self):
         embeddings_index = {}
@@ -123,12 +128,15 @@ class Model(ABC):
 
 
 class ScoreModel(Model):
-    def __init__(self):
+    def __init__(self, embedding=None):
         super().__init__()
         self.tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/training_set.tsv')['essay'])
         self.vocab_size = len(self.tokenizer.word_index) + 1
-        self.model.add(
-            Embedding(self.vocab_size, 300, weights=[self.get_embedding_matrix()], input_length=200, trainable=False))
+        if embedding is None:
+            self.embedding = self.get_embedding_matrix()
+        else:
+            self.embedding = embedding
+        self.model.add(Embedding(self.vocab_size, 300, weights=[self.embedding], input_length=200, trainable=False))
         self.model.add(LSTM(128, dropout=0.3, return_sequences=True))
         self.model.add(GlobalMaxPooling1D())
         self.model.add(Dense(64, activation='relu'))
@@ -169,12 +177,15 @@ class ScoreModel(Model):
 
 
 class IdeaModel(Model):
-    def __init__(self):
+    def __init__(self, embedding=None):
         super().__init__()
         self.tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
         self.vocab_size = len(self.tokenizer.word_index) + 1
-        self.model.add(
-            Embedding(self.vocab_size, 300, weights=[self.get_embedding_matrix()], input_length=200, trainable=False))
+        if embedding is None:
+            self.embedding = self.get_embedding_matrix()
+        else:
+            self.embedding = embedding
+        self.model.add(Embedding(self.vocab_size, 300, weights=[self.embedding], input_length=200, trainable=False))
         self.model.add(LSTM(128, dropout=0.2, return_sequences=True))
         self.model.add(GlobalMaxPooling1D())
         self.model.add(Dense(64, activation='relu'))
@@ -207,12 +218,15 @@ class IdeaModel(Model):
 
 
 class OrganizationModel(Model):
-    def __init__(self):
+    def __init__(self, embedding=None):
         super().__init__()
         self.tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
         self.vocab_size = len(self.tokenizer.word_index) + 1
-        self.model.add(
-            Embedding(self.vocab_size, 300, weights=[self.get_embedding_matrix()], input_length=200, trainable=False))
+        if embedding is None:
+            self.embedding = self.get_embedding_matrix()
+        else:
+            self.embedding = embedding
+        self.model.add(Embedding(self.vocab_size, 300, weights=[self.embedding], input_length=200, trainable=False))
         self.model.add(LSTM(128, dropout=0.2, return_sequences=True))
         self.model.add(GlobalMaxPooling1D())
         self.model.add(Dense(64, activation='relu'))
@@ -245,12 +259,15 @@ class OrganizationModel(Model):
 
 
 class StyleModel(Model):
-    def __init__(self):
+    def __init__(self, embedding=None):
         super().__init__()
         self.tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
         self.vocab_size = len(self.tokenizer.word_index) + 1
-        self.model.add(
-            Embedding(self.vocab_size, 300, weights=[self.get_embedding_matrix()], input_length=200, trainable=False))
+        if embedding is None:
+            self.embedding = self.get_embedding_matrix()
+        else:
+            self.embedding = embedding
+        self.model.add(Embedding(self.vocab_size, 300, weights=[self.embedding], input_length=200, trainable=False))
         self.model.add(LSTM(128, dropout=0.2, return_sequences=True))
         self.model.add(GlobalMaxPooling1D())
         self.model.add(Dense(64, activation='relu'))
