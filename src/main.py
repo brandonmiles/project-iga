@@ -1,4 +1,3 @@
-import os
 import pandas
 from grade import Grade
 
@@ -12,16 +11,6 @@ g = Grade(rubric, weights)
 
 try:
     test_data = pandas.read_csv('../data/test_set.tsv', sep='\t', encoding='ISO-8859-1')
-
-    # If the weights don't exist, then make them exist by training them models
-    if not os.path.exists('./model_weights/final_lstm.h5'):
-        g.retrain_model('../data/training_set.tsv')
-    if not os.path.exists('./model_weights/final_idea_lstm.h5'):
-        g.retrain_model('../data/comment_set.tsv', "idea")
-    if not os.path.exists('./model_weights/final_organization_lstm.h5'):
-        g.retrain_model('../data/comment_set.tsv', "organization")
-    if not os.path.exists('./model_weights/final_style_lstm.h5'):
-        g.retrain_model('../data/comment_set.tsv', "style")
 
     # Grade each essay
     a = 0

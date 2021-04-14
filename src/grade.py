@@ -39,7 +39,7 @@ def get_weights():
 
 class Grade:
     # Technically the last field can be voided if you are either not grading format or only using the raw text function
-    def __init__(self, rubric, weights, dictionary_path='../data/dictionary.tsv', style=None,
+    def __init__(self, rubric, weights, dictionary_path='../data/dictionary.csv', style=None,
                  style_path='../data/standard.json'):
         # Creating the models
         self.model = ScoreModel()
@@ -217,10 +217,10 @@ class Grade:
         debug, output = "", ""
 
         if self.rubric['model'] is not None:
-            points = self.model.evaluate(text)
-            idea_score = round(self.idea_model.evaluate(text) * 2)
-            organization_score = round(self.organization_model.evaluate(text) * 2)
-            style_score = round(self.style_model.evaluate(text) * 2)
+            points = self.model.evaluate(text) * 3
+            idea_score = round((self.idea_model.evaluate(text) * 3) + 0.5) - 1
+            organization_score = round((self.organization_model.evaluate(text) * 3) + 0.5) - 1
+            style_score = round((self.style_model.evaluate(text) * 3) + 0.5) - 1
 
             debug += "Model Score: " + str(points) + "\n"
             points = round(self.rubric['model'] * (1 - points))

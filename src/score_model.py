@@ -10,6 +10,7 @@ import preprocessing
 import score_model_helper
 from sklearn.metrics import cohen_kappa_score
 from sklearn.model_selection import KFold
+import os
 
 
 # This class contains the model for scoring the essay, and includes functions
@@ -19,9 +20,9 @@ class Model(ABC):
     # If you do not know what a LSTM is, see here:
     # https://colah.github.io/posts/2015-08-Understanding-LSTMs/.
     def __init__(self):
-        self.tokenizer = None
+        self.tokenizer = Tokenizer()
+        self.model = Sequential()
         self.vocab_size = None
-        self.model = None
         self.filepath = None
 
     @abstractmethod
@@ -95,11 +96,15 @@ class Model(ABC):
     def evaluate(self, essay):
         text_arr = score_model_helper.preprocess(essay, self.tokenizer)
         text_arr = np.asarray(text_arr)
-        self.model.load_weights(self.filepath)  # Get weights from trained model
-        return self.model.predict(text_arr)[0, 0]  # Predict score of input essay
+        if os.path.exists('./model_weights/final_lstm.h5'):
+            self.model.load_weights(self.filepath)  # Get weights from trained model
+            return self.model.predict(text_arr)[0, 0]  # Predict score of input essay
+        else:
+            return None
 
     def get_embedding_matrix(self):
         embeddings_index = {}
+
         f = open('../data/glove6B/glove.6B.300d.txt', encoding='utf8')
         for line in f:
             values = line.split()
@@ -120,10 +125,8 @@ class Model(ABC):
 class ScoreModel(Model):
     def __init__(self):
         super().__init__()
-        self.tokenizer = Tokenizer()
         self.tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/training_set.tsv')['essay'])
         self.vocab_size = len(self.tokenizer.word_index) + 1
-        self.model = Sequential()
         self.model.add(
             Embedding(self.vocab_size, 300, weights=[self.get_embedding_matrix()], input_length=200, trainable=False))
         self.model.add(LSTM(128, dropout=0.3, return_sequences=True))
@@ -132,12 +135,15 @@ class ScoreModel(Model):
         self.model.add(Dense(1, activation='sigmoid'))
         self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', 'mae'])
         self.filepath = './model_weights/final_lstm.h5'
+        self.data_path = '../data/training_set.tsv'
 
-    def load_data(self, filepath):
+    def load_data(self, filepath=None):
         y = pandas.DataFrame(np.empty(0, dtype=[('essay_id', 'int'), ('normal', 'float32')]))
 
         # Get only the essays from the essay set you will be grading against
-        x = score_model_helper.get_dataframe(filepath)  # Training data
+        if filepath is not None:
+            self.data_path = filepath
+        x = score_model_helper.get_dataframe(self.data_path)  # Training data
 
         for i in x.index.values:
             set_number = x.loc[i, 'essay_set']
@@ -165,24 +171,25 @@ class ScoreModel(Model):
 class IdeaModel(Model):
     def __init__(self):
         super().__init__()
-        self.tokenizer = Tokenizer()
         self.tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
         self.vocab_size = len(self.tokenizer.word_index) + 1
-        self.model = Sequential()
         self.model.add(
             Embedding(self.vocab_size, 300, weights=[self.get_embedding_matrix()], input_length=200, trainable=False))
-        self.model.add(LSTM(128, dropout=0.3, return_sequences=True))
+        self.model.add(LSTM(128, dropout=0.2, return_sequences=True))
         self.model.add(GlobalMaxPooling1D())
         self.model.add(Dense(64, activation='relu'))
         self.model.add(Dense(1, activation='sigmoid'))
         self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', 'mae'])
         self.filepath = './model_weights/final_idea_lstm.h5'
+        self.data_path = '../data/comment_set.tsv'
 
-    def load_data(self, filepath):
+    def load_data(self, filepath=None):
         y = pandas.DataFrame(np.empty(0, dtype=[('essay_id', 'int'), ('normal', 'float32')]))
 
         # Get only the essays from the essay set you will be grading against
-        x = score_model_helper.get_dataframe(filepath)  # Training data
+        if filepath is not None:
+            self.data_path = filepath
+        x = score_model_helper.get_dataframe(self.data_path)  # Training data
 
         for i in x.index.values:
             comment = x.loc[i, 'comments'].split(',')[0]
@@ -202,24 +209,25 @@ class IdeaModel(Model):
 class OrganizationModel(Model):
     def __init__(self):
         super().__init__()
-        self.tokenizer = Tokenizer()
         self.tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
         self.vocab_size = len(self.tokenizer.word_index) + 1
-        self.model = Sequential()
         self.model.add(
             Embedding(self.vocab_size, 300, weights=[self.get_embedding_matrix()], input_length=200, trainable=False))
-        self.model.add(LSTM(128, dropout=0.3, return_sequences=True))
+        self.model.add(LSTM(128, dropout=0.2, return_sequences=True))
         self.model.add(GlobalMaxPooling1D())
         self.model.add(Dense(64, activation='relu'))
         self.model.add(Dense(1, activation='sigmoid'))
         self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', 'mae'])
         self.filepath = './model_weights/final_organization_lstm.h5'
+        self.data_path = '../data/comment_set.tsv'
 
-    def load_data(self, filepath):
+    def load_data(self, filepath=None):
         y = pandas.DataFrame(np.empty(0, dtype=[('essay_id', 'int'), ('normal', 'float32')]))
 
         # Get only the essays from the essay set you will be grading against
-        x = score_model_helper.get_dataframe(filepath)  # Training data
+        if filepath is not None:
+            self.data_path = filepath
+        x = score_model_helper.get_dataframe(self.data_path)  # Training data
 
         for i in x.index.values:
             comment = x.loc[i, 'comments'].split(',')[1]
@@ -239,24 +247,25 @@ class OrganizationModel(Model):
 class StyleModel(Model):
     def __init__(self):
         super().__init__()
-        self.tokenizer = Tokenizer()
         self.tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
         self.vocab_size = len(self.tokenizer.word_index) + 1
-        self.model = Sequential()
         self.model.add(
             Embedding(self.vocab_size, 300, weights=[self.get_embedding_matrix()], input_length=200, trainable=False))
-        self.model.add(LSTM(128, dropout=0.3, return_sequences=True))
+        self.model.add(LSTM(128, dropout=0.2, return_sequences=True))
         self.model.add(GlobalMaxPooling1D())
         self.model.add(Dense(64, activation='relu'))
         self.model.add(Dense(1, activation='sigmoid'))
         self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', 'mae'])
         self.filepath = './model_weights/final_style_lstm.h5'
+        self.data_path = '../data/comment_set.tsv'
 
-    def load_data(self, filepath):
+    def load_data(self, filepath=None):
         y = pandas.DataFrame(np.empty(0, dtype=[('essay_id', 'int'), ('normal', 'float32')]))
 
         # Get only the essays from the essay set you will be grading against
-        x = score_model_helper.get_dataframe(filepath)  # Training data
+        if filepath is not None:
+            self.data_path = filepath
+        x = score_model_helper.get_dataframe(self.data_path)  # Training data
 
         for i in x.index.values:
             comment = x.loc[i, 'comments'].split(',')[2]
