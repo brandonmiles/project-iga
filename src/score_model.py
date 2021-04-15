@@ -35,8 +35,8 @@ class Model(ABC):
 
     # Train the model to prime it for scoring essays, then test it using
     # an evaluation metric (in this case, Cohen's kappa coefficient)
-    def train_and_test(self, x, y):
-        cv = KFold(n_splits=2, shuffle=True)
+    def train_and_test(self, x, y,  n_splits, epochs):
+        cv = KFold(n_splits=n_splits, shuffle=True)
 
         if x is None or y is None:
             return False
@@ -76,7 +76,7 @@ class Model(ABC):
             x_test_seq = np.array(x_test_seq)
 
             # Train LSTM model
-            self.model.fit(x_train_seq, y_train.loc[:, 'normal'].values, batch_size=128, epochs=4)
+            self.model.fit(x_train_seq, y_train.loc[:, 'normal'].values, batch_size=128, epochs=epochs)
 
             # Test LSTM model on test data
             y_pred = self.model.predict(x_test_seq)
@@ -85,7 +85,7 @@ class Model(ABC):
                 y_test.loc[i, 'normal'] = round(y_test.loc[i, 'normal'] * 100)
 
             # Save the final iteration of the trained model
-            if count == 2:
+            if count == n_splits:
                 self.model.save(self.filepath)
 
             # Evaluate the model using Cohen's kappa coefficient
@@ -100,7 +100,7 @@ class Model(ABC):
     def evaluate(self, essay):
         text_arr = score_model_helper.preprocess(essay, self.tokenizer)
         text_arr = np.asarray(text_arr)
-        if os.path.exists('./model_weights/final_lstm.h5'):
+        if os.path.exists(self.filepath):
             self.model.load_weights(self.filepath)  # Get weights from trained model
             return self.model.predict(text_arr)[0, 0]  # Predict score of input essay
         else:
@@ -173,7 +173,7 @@ class ScoreModel(Model):
             if set_number == 8:
                 y.loc[i, 'normal'] = x.loc[i, 'domain1_score'] / 60
 
-        return self.train_and_test(x, y)
+        return self.train_and_test(x, y, 2, 5)
 
 
 class IdeaModel(Model):
@@ -186,7 +186,7 @@ class IdeaModel(Model):
         else:
             self.embedding = embedding
         self.model.add(Embedding(self.vocab_size, 300, weights=[self.embedding], input_length=200, trainable=False))
-        self.model.add(LSTM(128, dropout=0.2, return_sequences=True))
+        self.model.add(LSTM(128, dropout=0.3, return_sequences=True))
         self.model.add(GlobalMaxPooling1D())
         self.model.add(Dense(64, activation='relu'))
         self.model.add(Dense(1, activation='sigmoid'))
@@ -214,7 +214,7 @@ class IdeaModel(Model):
                 else:
                     y.loc[i, 'normal'] = 1.0
 
-        return self.train_and_test(x, y)
+        return self.train_and_test(x, y, 4, 10)
 
 
 class OrganizationModel(Model):
@@ -255,7 +255,7 @@ class OrganizationModel(Model):
                 else:
                     y.loc[i, 'normal'] = 1.0
 
-        return self.train_and_test(x, y)
+        return self.train_and_test(x, y, 4, 10)
 
 
 class StyleModel(Model):
@@ -296,4 +296,4 @@ class StyleModel(Model):
                 else:
                     y.loc[i, 'normal'] = 1.0
 
-        return self.train_and_test(x, y)
+        return self.train_and_test(x, y, 4, 10)
