@@ -80,17 +80,31 @@ class Model(ABC):
 
             # Test LSTM model on test data
             y_pred = self.model.predict(x_test_seq)
-            y_pred = np.around(y_pred * 100)
+
+            twenty_five, twenty, fifteen, ten, five, j = 0, 0, 0, 0, 0, 0
             for i in y_test.index.values:
-                y_test.loc[i, 'normal'] = round(y_test.loc[i, 'normal'] * 100)
+                differance = abs(y_test.loc[i, 'normal'] - y_pred[0])
+                j += 1
+                if differance < 0.25:
+                    twenty_five += 1
+                if differance < 0.2:
+                    twenty += 1
+                if differance < 0.15:
+                    fifteen += 1
+                if differance < 0.1:
+                    ten += 1
+                if differance < 0.05:
+                    five += 1
+
+            print("Number of Essays Within 25 Points: " + str(twenty_five / len(y_pred)) + "%")
+            print("Number of Essays Within 20 Points: " + str(twenty / len(y_pred)) + "%")
+            print("Number of Essays Within 15 Points: " + str(fifteen / len(y_pred)) + "%")
+            print("Number of Essays Within 10 Points: " + str(ten / len(y_pred)) + "%")
+            print("Number of Essays Within 5 Points: " + str(five / len(y_pred)) + "%")
 
             # Save the final iteration of the trained model
             if count == n_splits:
                 self.model.save(self.filepath)
-
-            # Evaluate the model using Cohen's kappa coefficient
-            result = cohen_kappa_score(y_test.loc[:, 'normal'].values, y_pred, weights='quadratic')
-            print("Cohen's kappa coefficient: {}".format(result))
 
             count += 1
         return True
@@ -141,7 +155,7 @@ class ScoreModel(Model):
         self.model.add(GlobalMaxPooling1D())
         self.model.add(Dense(64, activation='relu'))
         self.model.add(Dense(1, activation='sigmoid'))
-        self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', 'mae'])
+        self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
         self.filepath = './model_weights/final_lstm.h5'
         self.data_path = '../data/training_set.tsv'
 
@@ -173,7 +187,7 @@ class ScoreModel(Model):
             if set_number == 8:
                 y.loc[i, 'normal'] = x.loc[i, 'domain1_score'] / 60
 
-        return self.train_and_test(x, y, 2, 5)
+        return self.train_and_test(x, y, 2, 2)
 
 
 class IdeaModel(Model):
@@ -190,7 +204,7 @@ class IdeaModel(Model):
         self.model.add(GlobalMaxPooling1D())
         self.model.add(Dense(64, activation='relu'))
         self.model.add(Dense(1, activation='sigmoid'))
-        self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', 'mae'])
+        self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
         self.filepath = './model_weights/final_idea_lstm.h5'
         self.data_path = '../data/comment_set.tsv'
 
@@ -231,7 +245,7 @@ class OrganizationModel(Model):
         self.model.add(GlobalMaxPooling1D())
         self.model.add(Dense(64, activation='relu'))
         self.model.add(Dense(1, activation='sigmoid'))
-        self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', 'mae'])
+        self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
         self.filepath = './model_weights/final_organization_lstm.h5'
         self.data_path = '../data/comment_set.tsv'
 
@@ -272,7 +286,7 @@ class StyleModel(Model):
         self.model.add(GlobalMaxPooling1D())
         self.model.add(Dense(64, activation='relu'))
         self.model.add(Dense(1, activation='sigmoid'))
-        self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', 'mae'])
+        self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
         self.filepath = './model_weights/final_style_lstm.h5'
         self.data_path = '../data/comment_set.tsv'
 
