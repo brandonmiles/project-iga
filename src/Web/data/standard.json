@@ -1,0 +1,20 @@
+{
+ "font": [
+  "Times New Roman",
+  "Calibri Math"
+ ],
+ "size": 12,
+ "line_spacing": 2.0,
+ "after_spacing": 0.0,
+ "before_spacing": 0.0,
+ "page_width": 8.5,
+ "page_height": 11,
+ "left_margin": 1.0,
+ "bottom_margin": 1.0,
+ "right_margin": 1.0,
+ "top_margin": 1.0,
+ "header": null,
+ "footer": null,
+ "gutter": 0.0,
+ "indent": 1.0
+}
