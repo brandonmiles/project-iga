@@ -11,8 +11,10 @@ from score_model import ScoreModel
 import pandas as pd
 from grade import Grade
 import mysql.connector
+from datetime import datetime
+from email_user import send_email
 
-UPLOAD_FOLDER = 'C:\\Users\\Gautam\\Desktop\\freshStart2\\uploads'
+UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'docx'}
 
 
@@ -23,8 +25,8 @@ password = '8m8oqtTn'
 db = 'IGA_DB'
 
 # set up connection
-#conn = mysql.connector.connect(host=host, user=user, passwd=password, database=db)
-#cursor = conn.cursor()
+conn = mysql.connector.connect(host=host, user=user, passwd=password, database=db)
+cursor = conn.cursor()
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -88,8 +90,9 @@ def registration():
             form.response.data = out
             form.error.data = db
         '''         
-        
-         # check if the post request has the file part
+        # get email from user
+        email = request.form['email']
+        # check if the post request has the file part
         if 'file' not in request.files:
             flash('No file part')
             return redirect(request.url)
@@ -111,6 +114,21 @@ def registration():
             form.response.data=out
             form.error.data=db
             form.essay.data = essay
+
+            # add file to database
+            command = "INSERT INTO UserFiles (name, data, grade, feedback, upload_date) VALUES (%s, %s, %s, %s, %s)"
+            new_file = open(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'rb')
+            # get date to store in date field
+            now = datetime.now()
+            formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
+            args = (file.filename, new_file.read(), gd, out, formatted_date)
+            cursor.execute(command, args)
+            new_file.close()
+            # write update to database
+            conn.commit()
+            # send email if email was provided
+            if email:
+                send_email(email, gd, out)
            # return redirect(url_for('uploaded_file',
                                  #filename=filename))
     
