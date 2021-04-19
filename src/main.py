@@ -1,7 +1,6 @@
 import pandas
 from grade import Grade
 
-
 # How many points each graded section is worth, use None to remove from the rubric
 rubric = {'grammar': 20, 'key': 10, 'length': 20, 'format': 20, 'model': 20, 'reference': 10}
 # How easily or hard it is to lose points from each sections, use None to chose between word count and page count
@@ -18,7 +17,7 @@ try:
         a += 1
         print("-----------------------------------------------------------------------------------------------------\n")
         print("Essay: ", a)
-        db, gd, out = g.get_grade(text=i)
+        db, gd, out = g.get_grade(i)
         print(db + "Grade: " + str(gd) + "\n" + out)
 
 except FileNotFoundError:

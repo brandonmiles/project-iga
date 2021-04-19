@@ -17,7 +17,8 @@ STYLE_SKELETON = {'font': None,  # This should be a list of the font names
                   'top_margin': None,
                   'header': None,  # The size of the header space in inches
                   'footer': None,
-                  'gutter': None}
+                  'gutter': None,
+                  'indent': None}
 
 
 # Get the dictionary structure for the style
