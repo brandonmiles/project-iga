@@ -13,29 +13,64 @@ from sklearn.model_selection import KFold
 import os
 
 
-# This class contains the model for scoring the essay, and includes functions
-# for setting up and training the model.
 class Model(ABC):
-    # Initialize the model with two LSTM layers and one Dense layer.
-    # If you do not know what a LSTM is, see here:
-    # https://colah.github.io/posts/2015-08-Understanding-LSTMs/.
+    """
+    This is an abstract class that should NOT be initialized, but only used to define the variables and functions used
+    by the other model classes
+    """
     def __init__(self):
-        self.tokenizer = Tokenizer()
-        self.model = Sequential()
-        self.vocab_size = None
-        self.filepath = None
-        self.embedding = None
+        self._tokenizer = Tokenizer()
+        self._model = Sequential()
+        self._vocab_size = None
+        self._filepath = None
+        self._embedding = None
 
     @abstractmethod
     def load_data(self, filepath=None):
+        """
+        This function needs to be replaced by any inheriting classes. This function should should create an x pandas
+        Dataframe that contains an 'essays' column as well as a y pandas Dataframe that contains the same indexes as
+        x and a 'normal' column that represents the normalized scores of the x essays.
+
+        Parameters
+        ----------
+        filepath : str
+            This should be a filepath to a .csv file containing the data to train the model
+        """
         pass
 
     def get_embedding(self):
-        return self.embedding
+        """
+        Returns
+        -------
+        numpy.ndarray
+            An embedding matrix to be used between models with the same parameters in order to reduce load times.
+        """
+        return self._embedding
 
-    # Train the model to prime it for scoring essays, then test it using
-    # an evaluation metric (in this case, Cohen's kappa coefficient)
     def train_and_test(self, x, y,  n_splits, epochs):
+        """
+        Actually trains the model so it can be used to evaluate essays. The models filepath will be used to save the
+        weights of the model at the end of training. Progress will be outputted with relevant information about the
+        accuracy of the model as it is being trained.
+
+        Parameters
+        ----------
+        x : pandas.Dataframe
+            Should be a dataframe containing a 'essay' column to train the model with.
+        y : pandas.Dataframe
+            Should be a dataframe with the same indexes as x and a 'normal' column whose type is float32, being between
+            0.0 and 1.0.
+        n_splits : int
+            How many Kfolds the model will undergo.
+        epochs : int
+            How many epochs the model will go through for every Kfold
+
+        Returns
+        -------
+        bool
+            True if the training was successful, otherwise False, most likely due to poorly given x and y.
+        """
         cv = KFold(n_splits=n_splits, shuffle=True)
 
         if x is None or y is None:
@@ -65,8 +100,8 @@ class Model(ABC):
             test_essays = score_model_helper.get_clean_essays(test_essays)
 
             # Convert the text into a sequence of numbers (that the model can understand)
-            x_train_seq = self.tokenizer.texts_to_sequences(train_essays)
-            x_test_seq = self.tokenizer.texts_to_sequences(test_essays)
+            x_train_seq = self._tokenizer.texts_to_sequences(train_essays)
+            x_test_seq = self._tokenizer.texts_to_sequences(test_essays)
 
             x_train_seq = pad_sequences(x_train_seq, maxlen=200)
             x_test_seq = pad_sequences(x_test_seq, maxlen=200)
@@ -76,10 +111,10 @@ class Model(ABC):
             x_test_seq = np.array(x_test_seq)
 
             # Train LSTM model
-            self.model.fit(x_train_seq, y_train.loc[:, 'normal'].values, batch_size=128, epochs=epochs)
+            self._model.fit(x_train_seq, y_train.loc[:, 'normal'].values, batch_size=128, epochs=epochs)
 
             # Test LSTM model on test data
-            y_pred = self.model.predict(x_test_seq)
+            y_pred = self._model.predict(x_test_seq)
 
             twenty_five, twenty, fifteen, ten, five, j = 0, 0, 0, 0, 0, 0
             for i in y_test.index.values:
@@ -104,24 +139,42 @@ class Model(ABC):
 
             # Save the final iteration of the trained model
             if count == n_splits:
-                self.model.save(self.filepath)
+                self._model.save(self._filepath)
 
             count += 1
         return True
 
-    # Evaluate the input 'essay' on our trained model. See 'score_model_helper' file
-    # for explanations of what the functions involved do.
     def evaluate(self, essay):
-        text_arr = score_model_helper.preprocess(essay, self.tokenizer)
+        """
+        Used to give a score between 0.0 and 1.0 to the essay. If the model's weights can't be found, the model will
+        automatically be built from the given data.
+
+        Parameters
+        ----------
+        essay : str
+            Should be the essay text you want to evaluate
+
+        Returns
+        -------
+        A float32 between 0.0 and 1.0
+        """
+        text_arr = score_model_helper.preprocess(essay, self._tokenizer)
         text_arr = np.asarray(text_arr)
-        if os.path.exists(self.filepath):
-            self.model.load_weights(self.filepath)  # Get weights from trained model
-            return self.model.predict(text_arr)[0, 0]  # Predict score of input essay
+        if os.path.exists(self._filepath):
+            self._model.load_weights(self._filepath)  # Get weights from trained model
+            return self._model.predict(text_arr)[0, 0]  # Predict score of input essay
         else:
             self.load_data()
-            return self.model.predict(text_arr)[0, 0]
+            return self._model.predict(text_arr)[0, 0]
 
     def get_embedding_matrix(self):
+        """
+        Returns
+        -------
+        numpy.ndarray
+            An embedding matrix that matches the vocabulary size of the model. This function does take a long time to
+            load, so reduce the calls to it when possible.
+        """
         embeddings_index = {}
 
         f = open('../data/glove6B/glove.6B.300d.txt', encoding='utf8')
@@ -132,8 +185,8 @@ class Model(ABC):
             embeddings_index[word] = coefs
         f.close()
 
-        embedding_matrix = np.zeros((self.vocab_size, 300))
-        for word, i in self.tokenizer.word_index.items():
+        embedding_matrix = np.zeros((self._vocab_size, 300))
+        for word, i in self._tokenizer.word_index.items():
             embedding_vector = embeddings_index.get(word)
             if embedding_vector is not None:
                 embedding_matrix[i] = embedding_vector
@@ -142,30 +195,52 @@ class Model(ABC):
 
 
 class ScoreModel(Model):
+    """
+    This model should be used to give a grade to the overall quality of the essay.
+
+    Parameters
+    ----------
+    embedding : numpy.ndarray
+        Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
+    """
     def __init__(self, embedding=None):
         super().__init__()
-        self.tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/training_set.tsv')['essay'])
-        self.vocab_size = len(self.tokenizer.word_index) + 1
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/training_set.tsv')['essay'])
+        self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
-            self.embedding = self.get_embedding_matrix()
+            self._embedding = self.get_embedding_matrix()
         else:
-            self.embedding = embedding
-        self.model.add(Embedding(self.vocab_size, 300, weights=[self.embedding], input_length=200, trainable=False))
-        self.model.add(LSTM(128, dropout=0.3, return_sequences=True))
-        self.model.add(GlobalMaxPooling1D())
-        self.model.add(Dense(64, activation='relu'))
-        self.model.add(Dense(1, activation='sigmoid'))
-        self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
-        self.filepath = './model_weights/final_lstm.h5'
-        self.data_path = '../data/training_set.tsv'
+            self._embedding = embedding
+        self._model.add(Embedding(self._vocab_size, 300, weights=[self._embedding], input_length=200, trainable=False))
+        self._model.add(LSTM(128, dropout=0.3, return_sequences=True))
+        self._model.add(GlobalMaxPooling1D())
+        self._model.add(Dense(64, activation='relu'))
+        self._model.add(Dense(1, activation='sigmoid'))
+        self._model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
+        self._filepath = './model_weights/final_lstm.h5'
+        self.__data_path = '../data/training_set.tsv'
 
     def load_data(self, filepath=None):
+        """
+        Use to load the data into the score model, followed by training the new model from the data.
+
+        Parameters
+        ----------
+        filepath : str
+            Should be a filepath to a .csv file with an 'essay_id', 'essay_set', 'essay', and 'domain1_score' column.
+            If not provided, then the default filepath will be used in its place if one exists.
+
+        Returns
+        -------
+        bool
+            True if the model training was successful, otherwise False.
+        """
         y = pandas.DataFrame(np.empty(0, dtype=[('essay_id', 'int'), ('normal', 'float32')]))
 
         # Get only the essays from the essay set you will be grading against
         if filepath is not None:
-            self.data_path = filepath
-        x = score_model_helper.get_dataframe(self.data_path)  # Training data
+            self.__data_path = filepath
+        x = score_model_helper.get_dataframe(self.__data_path)  # Training data
 
         for i in x.index.values:
             set_number = x.loc[i, 'essay_set']
@@ -191,30 +266,53 @@ class ScoreModel(Model):
 
 
 class IdeaModel(Model):
+    """
+    This model should be used to give a score that represents the quality of ideas in the essay.
+
+    Parameters
+    ----------
+    embedding : numpy.ndarray
+        Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
+    """
     def __init__(self, embedding=None):
         super().__init__()
-        self.tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
-        self.vocab_size = len(self.tokenizer.word_index) + 1
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
+        self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
-            self.embedding = self.get_embedding_matrix()
+            self._embedding = self.get_embedding_matrix()
         else:
-            self.embedding = embedding
-        self.model.add(Embedding(self.vocab_size, 300, weights=[self.embedding], input_length=200, trainable=False))
-        self.model.add(LSTM(128, dropout=0.3, return_sequences=True))
-        self.model.add(GlobalMaxPooling1D())
-        self.model.add(Dense(64, activation='relu'))
-        self.model.add(Dense(1, activation='sigmoid'))
-        self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
-        self.filepath = './model_weights/final_idea_lstm.h5'
-        self.data_path = '../data/comment_set.tsv'
+            self._embedding = embedding
+        self._model.add(Embedding(self._vocab_size, 300, weights=[self._embedding], input_length=200, trainable=False))
+        self._model.add(LSTM(128, dropout=0.3, return_sequences=True))
+        self._model.add(GlobalMaxPooling1D())
+        self._model.add(Dense(64, activation='relu'))
+        self._model.add(Dense(1, activation='sigmoid'))
+        self._model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
+        self._filepath = './model_weights/final_idea_lstm.h5'
+        self.__data_path = '../data/comment_set.tsv'
 
     def load_data(self, filepath=None):
+        """
+        Use to load the data into the feedback model, followed by training the new model from the data.
+
+        Parameters
+        ----------
+        filepath : str
+            Should be a filepath to a .csv file with an 'essay_id', 'essay' and 'comments' column, where the 'comments'
+            column should contain 'ID#,ORG#,STY#', where the # is either 1, 2, or 3. If not provided, then the default
+            filepath will be used in its place if one exists.
+
+        Returns
+        -------
+        bool
+            True if the model training was successful, otherwise False.
+        """
         y = pandas.DataFrame(np.empty(0, dtype=[('essay_id', 'int'), ('normal', 'float32')]))
 
         # Get only the essays from the essay set you will be grading against
         if filepath is not None:
-            self.data_path = filepath
-        x = score_model_helper.get_dataframe(self.data_path)  # Training data
+            self.__data_path = filepath
+        x = score_model_helper.get_dataframe(self.__data_path)  # Training data
 
         for i in x.index.values:
             comment = x.loc[i, 'comments'].split(',')[0]
@@ -232,30 +330,53 @@ class IdeaModel(Model):
 
 
 class OrganizationModel(Model):
+    """
+    This model should be used to give a score that represents the quality of the organization in the essay.
+
+    Parameters
+    ----------
+    embedding : numpy.ndarray
+        Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
+    """
     def __init__(self, embedding=None):
         super().__init__()
-        self.tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
-        self.vocab_size = len(self.tokenizer.word_index) + 1
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
+        self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
-            self.embedding = self.get_embedding_matrix()
+            self._embedding = self.get_embedding_matrix()
         else:
-            self.embedding = embedding
-        self.model.add(Embedding(self.vocab_size, 300, weights=[self.embedding], input_length=200, trainable=False))
-        self.model.add(LSTM(128, dropout=0.2, return_sequences=True))
-        self.model.add(GlobalMaxPooling1D())
-        self.model.add(Dense(64, activation='relu'))
-        self.model.add(Dense(1, activation='sigmoid'))
-        self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
-        self.filepath = './model_weights/final_organization_lstm.h5'
-        self.data_path = '../data/comment_set.tsv'
+            self._embedding = embedding
+        self._model.add(Embedding(self._vocab_size, 300, weights=[self._embedding], input_length=200, trainable=False))
+        self._model.add(LSTM(128, dropout=0.2, return_sequences=True))
+        self._model.add(GlobalMaxPooling1D())
+        self._model.add(Dense(64, activation='relu'))
+        self._model.add(Dense(1, activation='sigmoid'))
+        self._model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
+        self._filepath = './model_weights/final_organization_lstm.h5'
+        self.__data_path = '../data/comment_set.tsv'
 
     def load_data(self, filepath=None):
+        """
+        Use to load the data into the feedback model, followed by training the new model from the data.
+
+        Parameters
+        ----------
+        filepath : str
+            Should be a filepath to a .csv file with an 'essay_id', 'essay' and 'comments' column, where the 'comments'
+            column should contain 'ID#,ORG#,STY#', where the # is either 1, 2, or 3. If not provided, then the default
+            filepath will be used in its place if one exists.
+
+        Returns
+        -------
+        bool
+            True if the model training was successful, otherwise False.
+        """
         y = pandas.DataFrame(np.empty(0, dtype=[('essay_id', 'int'), ('normal', 'float32')]))
 
         # Get only the essays from the essay set you will be grading against
         if filepath is not None:
-            self.data_path = filepath
-        x = score_model_helper.get_dataframe(self.data_path)  # Training data
+            self.__data_path = filepath
+        x = score_model_helper.get_dataframe(self.__data_path)  # Training data
 
         for i in x.index.values:
             comment = x.loc[i, 'comments'].split(',')[1]
@@ -273,30 +394,53 @@ class OrganizationModel(Model):
 
 
 class StyleModel(Model):
+    """
+    This model should be used to give a score that represents the quality of the style in the essay.
+
+    Parameters
+    ----------
+    embedding : numpy.ndarray
+        Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
+    """
     def __init__(self, embedding=None):
         super().__init__()
-        self.tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
-        self.vocab_size = len(self.tokenizer.word_index) + 1
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
+        self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
-            self.embedding = self.get_embedding_matrix()
+            self._embedding = self.get_embedding_matrix()
         else:
-            self.embedding = embedding
-        self.model.add(Embedding(self.vocab_size, 300, weights=[self.embedding], input_length=200, trainable=False))
-        self.model.add(LSTM(128, dropout=0.2, return_sequences=True))
-        self.model.add(GlobalMaxPooling1D())
-        self.model.add(Dense(64, activation='relu'))
-        self.model.add(Dense(1, activation='sigmoid'))
-        self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
-        self.filepath = './model_weights/final_style_lstm.h5'
-        self.data_path = '../data/comment_set.tsv'
+            self._embedding = embedding
+        self._model.add(Embedding(self._vocab_size, 300, weights=[self._embedding], input_length=200, trainable=False))
+        self._model.add(LSTM(128, dropout=0.2, return_sequences=True))
+        self._model.add(GlobalMaxPooling1D())
+        self._model.add(Dense(64, activation='relu'))
+        self._model.add(Dense(1, activation='sigmoid'))
+        self._model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
+        self._filepath = './model_weights/final_style_lstm.h5'
+        self.__data_path = '../data/comment_set.tsv'
 
     def load_data(self, filepath=None):
+        """
+        Use to load the data into the feedback model, followed by training the new model from the data.
+
+        Parameters
+        ----------
+        filepath : str
+            Should be a filepath to a .csv file with an 'essay_id', 'essay' and 'comments' column, where the 'comments'
+            column should contain 'ID#,ORG#,STY#', where the # is either 1, 2, or 3. If not provided, then the default
+            filepath will be used in its place if one exists.
+
+        Returns
+        -------
+        bool
+            True if the model training was successful, otherwise False.
+        """
         y = pandas.DataFrame(np.empty(0, dtype=[('essay_id', 'int'), ('normal', 'float32')]))
 
         # Get only the essays from the essay set you will be grading against
         if filepath is not None:
-            self.data_path = filepath
-        x = score_model_helper.get_dataframe(self.data_path)  # Training data
+            self.__data_path = filepath
+        x = score_model_helper.get_dataframe(self.__data_path)  # Training data
 
         for i in x.index.values:
             comment = x.loc[i, 'comments'].split(',')[2]

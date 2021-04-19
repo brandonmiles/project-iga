@@ -2,21 +2,43 @@ import pandas
 
 
 class KeyWords:
+    """
+    This class is used exclusively to search the text with a list of keywords and record their occurrence.
+
+    Parameters
+    ----------
+    filepath : str
+        An optional filepath to a .csv containing a list of keywords. Not providing a filepath means starting with an
+        empty keyword list that can be filled in over time.
+    """
     def __init__(self, filepath=None):  # Initialize with the dictionary file known
-        self.filepath = filepath
-        self.keys = []
+        self.__filepath = filepath
+        self.__keys = []
 
         if filepath is not None:
             try:
-                self.keys = open(filepath, 'r').read().split(',')
+                self.__keys = open(filepath, 'r').read().split(',')
             except FileNotFoundError:
                 print(filepath, " not found")
 
-    # Given text, return a tuple of lists that contain the keywords and their occurrences
     def occurrence(self, text):
+        """
+        Use to count the occurrence of every keyword in a given text.
+
+        Parameters
+        ----------
+         text : str
+            This is the raw text that you want to check.
+
+        Returns
+        -------
+        list
+            This is a list of pairs, where each pair consists of the keyword followed by the number of occurrences of it
+            in the text.
+        """
         pair = []
 
-        for i in self.keys:  # Look for the keywords
+        for i in self.__keys:  # Look for the keywords
             char_loc, number = 0, 0
 
             while True:
@@ -30,9 +52,22 @@ class KeyWords:
 
         return pair
 
-    # Add a word to the key word dictionary
     def add_keyword(self, word):
-        keys = self.keys
+        """
+        Use to add a keyword to the current keyword list, as well as add it to the given .csv file assuming one was
+        given.
+
+        Parameters
+        ----------
+        word : str
+            This should be a single word to be added to the keywords
+
+        Returns
+        -------
+        bool
+            True if added successfully, False otherwise.
+        """
+        keys = self.__keys
         if word.lower() in keys:
             return True
 
@@ -42,12 +77,25 @@ class KeyWords:
                 open(self.filepath, 'w').write(keys)
             except PermissionError:
                 return False
-        self.keys = keys
+        self.__keys = keys
         return True
 
-    # Remove a key word from the dictionary
     def remove_keyword(self, word):
-        keys = self.keys
+        """
+        Use to remove a keyword to the current keyword list, as well as remove it from the given .csv file assuming
+        one was given. If the file doesn't exist in the keyword list, then simply return True.
+
+        Parameters
+        ----------
+        word : str
+            This should be a single word to be removed from the keywords
+
+        Returns
+        -------
+        bool
+            True if added successfully, False otherwise.
+        """
+        keys = self.__keys
         if word.lower() not in keys:
             return True
         while word.lower() in keys:
@@ -58,5 +106,5 @@ class KeyWords:
                 open(self.filepath, 'w').write(keys)
             except FileNotFoundError:
                 return False
-        self.keys = keys
+        self.__keys = keys
         return True

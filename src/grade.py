@@ -65,13 +65,13 @@ class Grade:
     Parameters
     ----------
     rubric : dict
-        rubric should be a dictionary with the same keys as the RUBRIC_SKELETON that can be gotten with
-        grade.get_rubric(). rubric will be used to calculate exactly how many points each graded section is worth, and
-        any graded section can be skipped by simply making a key equal to None.
+        rubric should be a dictionary with the same keys as grade.get_rubric(). rubric will be used to calculate exactly
+        how many points each graded section is worth, and any graded section can be skipped by simply making a key
+        equal to None.
         This is a required parameter to initialize Grade().
     weights : dict
-        weights should be a dictionary with the same keys as the WEIGHTs_SKELETON that can be gotten with
-        grade.get_weights(). weights contains various alterable values that effect how each section is graded.
+        weights should be a dictionary with the same keys as the grade.get_weights(). weights contains various alterable
+        values that effect how each section is graded.
         This is a required parameter to initialize Grade().
     dictionary_path : str
         This should be the filepath to a .csv file, which contains a list of keywords that will be searched for in the
@@ -79,9 +79,9 @@ class Grade:
         set of keywords and instead have an empty set that can be slowly added and removed from.
         Not a required parameter.
     style : dict
-        style should be a dictionary with the same keys as the STYLE_SKELETON that can be gotten with grade.get_style()
-        or a filepath to a .json file which contains a style dictionary. This has a default value set, but if the file
-        is missing, an Exception will be thrown.
+        style should be a dictionary with the same keys as grade.get_style() or a filepath to a .json file which
+        contains a style dictionary. This has a default value set, but if the file is missing, an Exception will be
+        thrown.
 
     Raises
     ------
@@ -281,7 +281,8 @@ class Grade:
             for i in key_list:
                 if i[1] > 0:
                     key += 1
-            points = max((self.__weights['key_max'] - key) / (self.__weights['key_max'] - self.__weights['key_min']), 0.0)
+            points = max((self.__weights['key_max'] - key) / (self.__weights['key_max'] - self.__weights['key_min']),
+                         0.0)
             points = min(round(points * self.__rubric['key']), self.__rubric['key'])
             debug += "Keyword Usage: " + str(key_list) + "\n"
             output += feedback.keyword_feedback(round(points * 3 / self.__rubric['key']))
@@ -477,8 +478,24 @@ class Grade:
 
         return points, debug, output
 
-    # This function will return the points lost, debug text, and feedback text in that order
     def grade_reference(self, text):
+        """
+        Use to grade only the reference section.
+
+        Parameters
+        ----------
+        text : str
+            Preferably the corrected text from grade_grammar(), the text will be searched for any references.
+
+        Returns
+        -------
+        tuple
+            A tuple containing points(integer), debug(string), and feedback(string).
+            Points is the number of points lost in this section, being between 0 and rubric['length'].
+            Debug contains the number of missing references.
+            Feedback will contain a pre-written string based on the number of points being taken off.
+            See feedback.py for more info.
+        """
         points = 0
         debug, output = "", ""
 
@@ -491,19 +508,48 @@ class Grade:
 
         return points, debug, output
 
-    # Call this function to retrain the model
     def retrain_model(self, filepath, name="score"):
-        if name.lower() == "idea":
-            self.__idea_model.load_data(filepath)
-        if name.lower() == "organization":
-            self.__organization_model.load_data(filepath)
-        if name.lower() == "style":
-            self.__style_model.load_data(filepath)
-        if name.lower() == "score":
-            self.__model.load_data(filepath)
+        """
+        Call this if you want to retrain a model.
 
-    # Change the style used while replacing the old style stored in the filepath if supplied
+        Parameters
+        ----------
+        filepath : str
+            This should be a file path to a .csv file containing the data to train the model with.
+        name : str
+            This parameter specifies which model is to be retrained. Acceptable strings are 'score', 'idea',
+            'organization', or 'style'.
+
+        Returns
+        -------
+        bool
+            Returns True if the model was trained successfully, otherwise False.
+        """
+        if name.lower() == "idea":
+            return self.__idea_model.load_data(filepath)
+        if name.lower() == "organization":
+            return self.__organization_model.load_data(filepath)
+        if name.lower() == "style":
+            return self.__style_model.load_data(filepath)
+        if name.lower() == "score":
+            return self.__model.load_data(filepath)
+
     def update_style(self, style, filepath=None):
+        """
+        Change the currently used style as well as potentially store a style for later use.
+
+        Parameters
+        ----------
+        style : dict
+            Should match the dictionary given by calling grade.get_style().
+        filepath : str
+            If provided, the given style will be stored at the file location.
+
+        Returns
+        -------
+        bool
+            True if the given style was correct and was saved correctly if a filepath was given, otherwise False.
+        """
         if set(style.keys()) == set(self.__style.keys()):
             if filepath is not None:
                 if not format.update_format_file(filepath, style):
@@ -512,39 +558,125 @@ class Grade:
             return True
         return False
 
-    # Get the current style if no filepath is supplied, otherwise load another style
     def get_style(self, filepath=None):
+        """
+        Get the currently used style or load a style from a filepath if given.
+
+        Parameters
+        ----------
+        filepath : str
+            If supplied, the style found in the file will replace the currently used style.
+
+        Returns
+        -------
+        dict
+            A style dictionary, unless the style couldn't be loaded from the file, raises an Exception then.
+        """
         if filepath is not None:
             self.__style = format.get_format_file(filepath)
         return self.__style
 
     def get_rubric(self):
+        """
+        Returns
+        -------
+        dict
+            Gets the currently used rubric.
+        """
         return self.__rubric
 
     def update_rubric(self, rubric):
+        """
+        Use to replace the currently used rubric.
+
+        Parameters
+        ----------
+        rubric : dict
+            Should be a dictionary with the same keys as grade.get_rubric().
+
+        Returns
+        -------
+        bool
+            If the supplied rubric is correct, return True, otherwise False.
+        """
         if set(rubric.keys()) == set(get_rubric().keys()):
             self.__rubric = rubric
             return True
         return False
 
     def get_weights(self):
+        """
+        Returns
+        -------
+        dict
+            The currently used weights dictionary.
+        """
         return self.__weights
 
     def update_weights(self, weights):
+        """
+        Use to replace the currently used weights.
+
+        Parameters
+        ----------
+        weights : dict
+            Should match the keys given by grade.get_weights().
+
+        Returns
+        -------
+        bool
+            True if the given weights is correct, otherwise returns False.
+        """
         if set(weights) == set(get_weights().keys()):
             self.__weights = weights
             return True
         return False
 
     def get_keywords(self):
+        """
+        Returns
+        -------
+        list
+            The list of keywords currently being used.
+        """
         return self.__words
 
     def add_keyword(self, word):
+        """
+        Adds the given word to the keyword list and to the .csv if one was provided beforehand.
+
+        Parameters
+        ----------
+        word : str
+            A single word to be added to a list of words.
+
+        Returns
+        -------
+        bool
+            True if the word was added successfully to the list and dictionary file, otherwise False.
+        """
         return self.__words.add_keyword(word)
 
     def remove_keyword(self, word):
+        """
+        Use to remove a word from the keyword list and .csv file if one exists.
+
+        Parameters
+        ----------
+        word : str
+            A single word to be added to the keyword list
+
+        True if removed successfully from both the list and .csv file, otherwise False.
+
+        """
         return self.__words.remove_keyword(word)
 
     def clear_keywords(self):
+        """
+        Returns
+        -------
+        bool
+            True if the word list is cleared completely
+        """
         self.__words = keywords.KeyWords()
         return True

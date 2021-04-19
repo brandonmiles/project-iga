@@ -4,30 +4,54 @@ import json
 
 WORD_NAMESPACE = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
 WORD_PROPERTIES = '{http://schemas.openxmlformats.org/officeDocument/2006/extended-properties}'
-STYLE_SKELETON = {'font': None,  # This should be a list of the font names
-                  'size': None,  # This should be the allowed font size
-                  'line_spacing': None,  # This is an float that defines the spacing between every line
-                  'after_spacing': None,  # This is a float that defines the spacing after every paragraph
-                  'before_spacing': None,  # This is a float that defines the spacing before every paragraph
-                  'page_width': None,  # This is the page width in inches
-                  'page_height': None,
-                  'left_margin': None,  # The page margin size in inches
-                  'bottom_margin': None,
-                  'right_margin': None,
-                  'top_margin': None,
-                  'header': None,  # The size of the header space in inches
-                  'footer': None,
-                  'gutter': None,
-                  'indent': None}
 
 
-# Get the dictionary structure for the style
 def get_style():
-    return STYLE_SKELETON
+    """
+    Use to get the dictionary structure that defines the style.
+
+    Returns
+    -------
+    dict
+        The dictionary has multiple keys, each can be set to None to void grading for that particular aspect of the
+        format.
+        'font' should be a list of the allowed fonts for the paper.
+        'size' is an int that represents the allowed font size.
+        'line_spacing' is a float that describes the spacing between every line.
+        'after_spacing' is a float that describes the spacing after every paragraph.
+        'before_spacing' is a float that describes the spacing before every paragraph.
+        'page_width' is a float that describes the width of the page in inches.
+        'page_height' is the same as 'page_width', except for height.
+        'left_margin' is a float that describes the size of the left margin in inches.
+        'bottom_margin', 'top_margin', and 'right_margin' are all the same as 'left_margin'.
+        'header' is a float in inches that describes the size of the header.
+        'footer' and 'gutter' are the same as the 'header'.
+        'indent' is a float in inches for how far indented the beginning of each paragraph should be.
+    """
+    return {'font': None, 'size': None, 'line_spacing': None, 'after_spacing': None, 'before_spacing': None,
+            'page_width': None, 'page_height': None, 'left_margin': None, 'bottom_margin': None, 'right_margin': None,
+            'top_margin': None, 'header': None, 'footer': None, 'gutter': None, 'indent': None}
 
 
-# Get the style format from a JSON file
 def get_format_file(filepath):
+    """
+    Use to retrieve a style from a file.
+
+    Parameters
+    ----------
+    filepath : str
+        A string describing the location of a .json file holding a style.
+
+    Returns
+    -------
+    dict
+        A style dictionary matching grade.get_style().
+
+    Raises
+    ------
+    Exception
+        Raises an exception with a message about the missing file.
+    """
     try:
         data = open(filepath, 'r')
         json_obj = json.loads(data.read())
@@ -44,9 +68,25 @@ def get_format_file(filepath):
         raise Exception(filepath + " not found")
 
 
-# Store the style format as a JSON for later use
 def update_format_file(filepath, style):
-    if set(style.keys()) != set(STYLE_SKELETON.keys()):
+    """
+    Use to update a .json file's style
+
+    Parameters
+    ----------
+    filepath : str
+        A string that specifies a .json file location
+
+    style : dict
+        The style you want to store in the file, must match grade.get_style()'s keys.
+
+    Returns
+    -------
+    bool
+        Will return True if the style was stored successfully, otherwise False is either the style was wrong or there
+        was a permission error.
+    """
+    if set(style.keys()) != set(get_style().keys()):
         return False
 
     try:
