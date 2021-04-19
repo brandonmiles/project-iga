@@ -99,41 +99,60 @@ def update_format_file(filepath, style):
         return False
 
 
-# NOTES: Know these conversions
-# Font Sizes: 24 = 12 pt font
-# Margins and Indent: 1440 = 1 inch
 class Format:
+    """
+    This class will handle all of the doc and docx xml decompiling to generate a dictionary of the document's currently
+    used fonts, sizes, and other formatting.
 
-    # Open the docx as a series of xml files
+    Parameters
+    ----------
+    filepath : str
+        This should be a filepath to the docx that you want to read. Giving it any other type of file will produce
+        an error.
+    """
+    __slots__ = ('__document', '__font', '__word_count', '__page_count', '__default_style')
+
     def __init__(self, filepath):
         try:
             # Opening up the needed xml documents
             file_tree = zipfile.ZipFile(filepath)
-            self.document = xml.etree.ElementTree.XML(file_tree.read('word/document.xml'))
-            self.font = xml.etree.ElementTree.XML(file_tree.read('word/fontTable.xml'))
+            self.__document = xml.etree.ElementTree.XML(file_tree.read('word/document.xml'))
+            self.__font = xml.etree.ElementTree.XML(file_tree.read('word/fontTable.xml'))
             general = xml.etree.ElementTree.XML(file_tree.read('docProps/app.xml'))
             style = xml.etree.ElementTree.XML(file_tree.read('word/styles.xml'))
 
             # Saving these values for later so we don't need to keep general
-            self.word_count = int(general.find(WORD_PROPERTIES + 'Words').text)
-            self.page_count = int(general.find(WORD_PROPERTIES + 'Pages').text)
+            self.__word_count = int(general.find(WORD_PROPERTIES + 'Words').text)
+            self.__page_count = int(general.find(WORD_PROPERTIES + 'Pages').text)
 
             # Need to get the default style now
             rPr = style.find(WORD_NAMESPACE + 'docDefaults').find(WORD_NAMESPACE + 'rPrDefault') \
                 .find(WORD_NAMESPACE + 'rPr')
             pPr = style.find(WORD_NAMESPACE + 'docDefaults').find(WORD_NAMESPACE + 'pPrDefault') \
                 .find(WORD_NAMESPACE + 'pPr')
-            secPr = self.document.find(WORD_NAMESPACE + 'body').find(WORD_NAMESPACE + 'sectPr')
+            secPr = self.__document.find(WORD_NAMESPACE + 'body').find(WORD_NAMESPACE + 'sectPr')
 
-            font = rPr.find(WORD_NAMESPACE + 'rFonts').attrib[WORD_NAMESPACE + 'ascii']
-            size = rPr.find(WORD_NAMESPACE + 'sz').attrib[WORD_NAMESPACE + 'val']
-            line = pPr.find(WORD_NAMESPACE + 'spacing').attrib[WORD_NAMESPACE + 'line']
-            after = pPr.find(WORD_NAMESPACE + 'spacing').attrib[WORD_NAMESPACE + 'after']
-
-            # Odds are, before paragraph line spacing doesn't exist, but a necessary countermeasure
+            font = ''
+            size = '24'
+            line = '240'
+            after = '0'
             before = '0'
-            if WORD_NAMESPACE + 'before' in pPr.keys():
-                before = pPr.find(WORD_NAMESPACE + 'spacing').attrib[WORD_NAMESPACE + 'before']
+            if rPr is not None:
+                rFonts = rPr.find(WORD_NAMESPACE + 'rFonts')
+                if WORD_NAMESPACE + 'ascii' in rFonts.keys():
+                    font = rFonts.attrib[WORD_NAMESPACE + 'ascii']
+                else:
+                    if WORD_NAMESPACE + 'asciiTheme' in rFonts.keys():
+                        font = rFonts.attrib[WORD_NAMESPACE + 'asciiTheme']
+                if WORD_NAMESPACE + 'val' in rPr.keys():
+                    size = rPr.find(WORD_NAMESPACE + 'sz').attrib[WORD_NAMESPACE + 'val']
+            if pPr is not None:
+                if WORD_NAMESPACE + 'line' in pPr.keys():
+                    line = pPr.find(WORD_NAMESPACE + 'spacing').attrib[WORD_NAMESPACE + 'line']
+                if WORD_NAMESPACE + 'after' in pPr.keys():
+                    after = pPr.find(WORD_NAMESPACE + 'spacing').attrib[WORD_NAMESPACE + 'after']
+                if WORD_NAMESPACE + 'before' in pPr.keys():
+                    before = pPr.find(WORD_NAMESPACE + 'spacing').attrib[WORD_NAMESPACE + 'before']
 
             pgSzW = secPr.find(WORD_NAMESPACE + 'pgSz').attrib[WORD_NAMESPACE + 'w']
             pgSzH = secPr.find(WORD_NAMESPACE + 'pgSz').attrib[WORD_NAMESPACE + 'h']
@@ -146,37 +165,52 @@ class Format:
             gutter = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'gutter']
 
             # Saving all these values as an easy to access dictionary
-            self.default_style = {'font': font, 'size': int(size) / 2, 'line_spacing': int(line) / 240,
-                                  'after_spacing': int(after) / 20, 'before_spacing': int(before) / 20,
-                                  'page_width': int(pgSzW) / 1440, 'page_height': int(pgSzH) / 1440,
-                                  'left_margin': int(pgMarLeft) / 1440, 'bottom_margin': int(pgMarBottom) / 1440,
-                                  'right_margin': int(pgMarRight) / 1440, 'top_margin': int(pgMarTop) / 1440,
-                                  'header': int(header) / 1440, 'footer': int(footer) / 1440,
-                                  'gutter': int(gutter) / 1440}
+            self.__default_style = {'font': font, 'size': int(size) / 2, 'line_spacing': int(line) / 240,
+                                    'after_spacing': int(after) / 20, 'before_spacing': int(before) / 20,
+                                    'page_width': int(pgSzW) / 1440, 'page_height': int(pgSzH) / 1440,
+                                    'left_margin': int(pgMarLeft) / 1440, 'bottom_margin': int(pgMarBottom) / 1440,
+                                    'right_margin': int(pgMarRight) / 1440, 'top_margin': int(pgMarTop) / 1440,
+                                    'header': int(header) / 1440, 'footer': int(footer) / 1440,
+                                    'gutter': int(gutter) / 1440}
         except FileNotFoundError:
-            print(filepath + "not found")
+            raise FileNotFoundError(filepath + "not found")
 
-    # Returns a list of all the fonts used, plus Times New Roman, Calibri and Calibri Light
     def get_font_table(self):
+        """
+        Use to get the font table provided by the xml document, but know that by default, it will always include Times
+        New Roman, Calibri and Calibri Light in the table.
+
+        Returns
+        -------
+        List
+            A list of fonts.
+        """
         a = []
 
-        for f in self.font.iter(WORD_NAMESPACE + 'font'):
+        for f in self.__font.iter(WORD_NAMESPACE + 'font'):
             a.append(f.attrib[WORD_NAMESPACE + 'name'])
 
         return a
 
-    # Returns a list of Fonts paired with the used sizes
     def get_font(self):
+        """
+        Use to get all of the fonts used as well as their sizes.
+
+        Returns
+        -------
+        list
+            A list of pairs, where each pair is a font name and the associated size used.
+        """
         fonts = []
 
-        paragraphs = self.document.find(WORD_NAMESPACE + 'body')
+        paragraphs = self.__document.find(WORD_NAMESPACE + 'body')
 
         # Checking every paragraph
         for p in paragraphs.iter(WORD_NAMESPACE + 'p'):
             # Checking every sentence break-up
             for r in p.iter(WORD_NAMESPACE + 'r'):
-                f = self.default_style['font']
-                s = 2 * self.default_style['size']
+                f = self.__default_style['font']
+                s = 2 * self.__default_style['size']
 
                 rPr = r.find(WORD_NAMESPACE + 'rPr')
                 # Attempt to grab the font and size, otherwise assume default is used
@@ -197,17 +231,25 @@ class Format:
 
         return fonts
 
-    # Returns a list of line spacing, after paragraph spacing, and before paragraph spacing
     def get_spacing(self):
+        """
+        Use to get the used line and paragraph spacings used in the document.
+
+        Returns
+        -------
+        List
+            A list of the three floats, the first being the line spacing, followed by the after paragraph and before
+            paragraph spacings.
+        """
         spacing_list = []
 
-        paragraphs = self.document.find(WORD_NAMESPACE + 'body')
+        paragraphs = self.__document.find(WORD_NAMESPACE + 'body')
 
         # Check every paragraph
         for p in paragraphs.iter(WORD_NAMESPACE + 'p'):
-            dl = 240 * self.default_style['line_spacing']
-            da = 20 * self.default_style['after_spacing']
-            db = 20 * self.default_style['before_spacing']
+            dl = 240 * self.__default_style['line_spacing']
+            da = 20 * self.__default_style['after_spacing']
+            db = 20 * self.__default_style['before_spacing']
             pPr = p.find(WORD_NAMESPACE + 'pPr')
 
             # If any part is missing, assume default is used
@@ -226,13 +268,21 @@ class Format:
 
         return spacing_list
 
-    # Returns a double, where 0 is no indents, 1 is all indented, and getting close to 0.5 means either
-    # inconsistent indentation or non-standard indentation, either way bad
     def get_indentation(self):
+        """
+        Use to get a score of the documents indention, being between 0.0 and 1.0, where 0.0 no indention and 1.0 is all
+        indention.
+
+        Returns
+        -------
+        float
+            A float, where 0 is no indents, 1 is all indented, and getting close to 0.5 means either inconsistent
+            indentation or non-standard indentation, either way bad.
+        """
         indent = 0
         paragraph_number = 0
 
-        paragraphs = self.document.find(WORD_NAMESPACE + 'body')
+        paragraphs = self.__document.find(WORD_NAMESPACE + 'body')
 
         # Check every paragraph
         for p in paragraphs.iter(WORD_NAMESPACE + 'p'):
@@ -251,12 +301,20 @@ class Format:
 
             return indent / paragraph_number
 
-    # Returns a double, where 0 is consistent margins, and 1~2 is wildly inconsistent margins between paragraphs
     def get_margin(self):
+        """
+        Use to get a margins score, where 0.0 is consistent margins, with 1.0 and above being increasingly inconsistent
+        margins.
+
+        Returns
+        -------
+        float
+            A float between 0.0 and 2.0 describing the margins consistency.
+        """
         margin = 0
         paragraph_number = 0
 
-        paragraphs = self.document.find(WORD_NAMESPACE + 'body')
+        paragraphs = self.__document.find(WORD_NAMESPACE + 'body')
 
         # Check every paragraph
         for p in paragraphs.iter(WORD_NAMESPACE + 'p'):
@@ -276,11 +334,15 @@ class Format:
 
             return margin / paragraph_number
 
-    # Return the actual text of the file
     def get_text(self):
+        """
+        Returns
+        -------
+        str
+            A string containing the all of the document's text.
+        """
         text = ""
-
-        paragraphs = self.document.find(WORD_NAMESPACE + 'body')
+        paragraphs = self.__document.find(WORD_NAMESPACE + 'body')
 
         # Checking every paragraph
         for p in paragraphs.iter(WORD_NAMESPACE + 'p'):
@@ -293,14 +355,29 @@ class Format:
 
         return text
 
-    # Returns the documents count of words, note that the exact count of words is dependent on Words standards
     def get_word_count(self):
-        return self.word_count
+        """
+        Returns
+        -------
+        int
+            An integer describing the word count.
+        """
+        return self.__word_count
 
-    # Returns the documents count of pages
     def get_page_count(self):
-        return self.page_count
+        """
+        Returns
+        -------
+        int
+            An integer describing the number of pages in the document.
+        """
+        return self.__page_count
 
-    # Returns the documents default style
     def get_default_style(self):
-        return self.default_style
+        """
+        Returns
+        -------
+        dict
+            The default style used by the document.
+        """
+        return self.__default_style

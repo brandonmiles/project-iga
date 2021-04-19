@@ -18,12 +18,15 @@ class Model(ABC):
     This is an abstract class that should NOT be initialized, but only used to define the variables and functions used
     by the other model classes
     """
+    __slots__ = ('_tokenizer', '_model', '_vocab_size', '_filepath', '_embedding', '__data_path')
+
     def __init__(self):
         self._tokenizer = Tokenizer()
         self._model = Sequential()
         self._vocab_size = None
         self._filepath = None
         self._embedding = None
+        self.__data_path = None
 
     @abstractmethod
     def load_data(self, filepath=None):

@@ -11,6 +11,9 @@ class KeyWords:
         An optional filepath to a .csv containing a list of keywords. Not providing a filepath means starting with an
         empty keyword list that can be filled in over time.
     """
+
+    __slots__ = ('__filepath', '__keys')
+
     def __init__(self, filepath=None):  # Initialize with the dictionary file known
         self.__filepath = filepath
         self.__keys = []
