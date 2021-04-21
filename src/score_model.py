@@ -6,7 +6,6 @@ from keras.preprocessing.sequence import pad_sequences
 import math
 import numpy as np
 import pandas
-import preprocessing
 import score_model_helper
 from sklearn.metrics import cohen_kappa_score
 from sklearn.model_selection import KFold
