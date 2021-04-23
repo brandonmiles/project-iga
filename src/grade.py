@@ -12,7 +12,7 @@ from pdfminer.high_level import extract_text
 def main():
 	return
 
-# This stops all the code from running when Sphinx imports the module
+# This stops all the code from running when Sphinx imports the module.
 if __name__ == '__main__':
 	main()
 

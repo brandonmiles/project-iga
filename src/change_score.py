@@ -48,6 +48,6 @@ def main():
 	# Send results to new .tsv file
 	train_data.to_csv('../data/training_set_n.tsv', sep='\t', encoding='ISO-8859-1', index=False)
 
-# This stops all the code from running when Sphinx imports the module
+# This stops all the code from running when Sphinx imports the module.
 if __name__ == '__main__':
 	main()
