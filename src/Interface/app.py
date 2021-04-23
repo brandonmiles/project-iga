@@ -10,8 +10,7 @@
 
 from flask import Flask, request, render_template, flash, redirect, url_for
 import os
-import sys
-sys.path.insert(0, os.path.abspath('..'))
+import os.path
 from werkzeug.utils import secure_filename
 from flask import send_from_directory
 from formData.IGAFormData import IGAFormData
@@ -28,6 +27,8 @@ import pandas as pd
 from grade import Grade
 import mysql.connector
 import ast
+from datetime import datetime
+import urllib.parse
 
 
 
@@ -64,7 +65,7 @@ except:
     print ('Unable to connect to database ' + app.config['DB_NAME'])
 
 
-command= "INSERT INTO UserEssays (essay, score) VALUES (%s, %s)"
+command = "INSERT INTO UserFiles (name, data, grade, feedback, error, email, upload_date) VALUES (%s, %s, %s, %s, %s, %s, %s)"
 email = ''
 rubric = {'grammar': 5, 'key': 5, 'length': 5, 'format': 5, 'model': 5, 'reference': 5}
 # How easily or hard it is to lose points from each sections, use None to chose between word count and page count
@@ -78,13 +79,13 @@ style = {'font': allowed_fonts, 'size': 12, 'line_spacing': 2.0, 'after_spacing'
                       'right_margin': 1.0, 'top_margin': 1.0, 'header': 0.0, 'footer': 0.0, 'gutter': 0.0, 'indent': 1.0}
 
 gradeModel = Grade(rubric, weights, style=style)
+print('ready!')
 
 # Set Values in Config Dictionary
 # -------------------------------
 app.config.from_mapping(
     UPLOAD_FOLDER = os.path.join(app.instance_path, 'uploads'))
 ALLOWED_EXTENSIONS = app.config['ALLOWED_EXTENSIONS']
-
     
 # Preferences and Email
 # ---------------------
@@ -153,9 +154,10 @@ def updatePreference():
         for keys in style:
             if style[keys] == 0 or style[keys] == 0.0:
                 style[keys] = None
-        
-        
-        gradeModel = Grade(rubric, weights, style=style)
+
+        gradeModel.update_rubric(rubric)
+        gradeModel.update_weights(weights)
+        gradeModel.update_style(style)
     return redirect (url_for('igaResponse'))
 
 @app.route('/updateEmail', methods=['POST'])
@@ -181,7 +183,6 @@ def uploaded_file(filename):
 
 # Error Handling
 # --------------
-
 @app.errorhandler(HTTPException)
 def handle_exception(e):
     """Return JSON instead of HTML for HTTP errors."""
@@ -196,6 +197,7 @@ def handle_exception(e):
     response.content_type = "application/json"
     return response
 
+
 @app.errorhandler(InternalServerError)
 def handle_500(e):
     original = getattr(e, "original_exception", None)
@@ -207,6 +209,7 @@ def handle_500(e):
     # wrapped unhandled error
     return render_template("500_unhandled.html", e=original), 500
 
+
 @app.errorhandler(Exception)
 def handle_exception(e):
     # pass through HTTP errors
@@ -215,6 +218,49 @@ def handle_exception(e):
 
     # now you're handling non-HTTP exceptions only
     return render_template("500_generic.html", e=e), 500
+
+# route that allows users to view their results
+@app.route('/results', methods=['GET', 'POST'])
+def results():
+    form = IGAFormData(request.form)
+    # get parameters from URL
+    user_email = urllib.parse.unquote(request.args.get('email'))
+    date = urllib.parse.unquote(request.args.get('date'))
+    print(user_email)
+    print(date)
+    # retrieve the user's most recent essay
+    comm = "SELECT name, data, grade, error, feedback FROM UserFiles WHERE email = %s AND upload_date = %s"
+    args = (user_email, date)
+    cursor.execute(comm, args)
+    # only get the most recent one
+    result = cursor.fetchall()
+    if not result:
+        return render_template('no_results.html')
+    result = result[0]
+    # insert grade, feedback and error values
+    form.grade.data = result[2]
+    form.response.data = result[4]
+    form.error.data = result[3]
+    # save file data to temporary file
+    filename = os.path.join(app.config['UPLOAD_FOLDER'], result[0])
+    file = open(filename, 'wb')
+    file.write(result[1])
+    file.close()
+    # determine type of file
+    filetype = filename.split('.')
+    # if word document
+    if filetype[len(filetype) - 1] == 'docx':
+        # get text from file
+        f = format.Format(filename)
+        form.essay.data = f.get_text()
+    # if pdf file
+    elif filetype[len(filetype) - 1] == 'pdf':
+        # get text from file
+        form.essay.data = extract_text(filename)
+    # remove temporary file
+    os.remove(filename)
+
+    return render_template('results.html', form=form)
 
 # --------------------------------------------------------
 # Main Route processing
@@ -271,50 +317,20 @@ def igaResponse():
                     flash("Error in evaluating essay")
             else:
                 flash ("Please enter an essay or upload a file")
-            
-        # For Save
-        # --------
-        
-        if request.form.get("Save"):
-            if form.grade.data:
-                lastrow = processSave(form.essay.data, form.grade.data)
-                if lastrow:
-                   flash("Addded record to database: " + str(lastrow))
-                else:
-                   flash('Could not add record to database')
+            # any uploaded file will be saved to database, open file to read its data
+            path = os.path.join('./', (os.path.relpath((os.path.join(app.config['UPLOAD_FOLDER'], filepath)))))
+            now = datetime.now()
+            formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
+            processSave(filepath, path, current_gd, form.response.data, form.error.data, form.email.data, formatted_date)
+
+            # after storing file in database, send email
+            if form.email.data:
+                processEmail(form.email.data, formatted_date)
+                flash("Email has been sent to: " + form.email.data)
+                # remove temp file so space is not wasted
+                os.remove(os.path.join('./', (os.path.relpath((os.path.join(app.config['UPLOAD_FOLDER'], filepath))))))
             else:
-                if form.uploadFile.data:
-                   filepath = form.uploadFile.data
-                   filepath = filepath.split(':')
-                   filepath = filepath[1].lstrip()
-                   current_db, current_gd, current_out = processEvaluateFile(os.path.join('./',(os.path.relpath((os.path.join(app.config['UPLOAD_FOLDER'], filepath))))))
-                   if current_gd:
-                        form.grade.data = current_gd
-                        form.response.data = current_db
-                        form.error.data, form.information.data = formatError (current_out)
-                        lastrow = processSave(form.essay.data, form.grade.data)
-                        if lastrow:
-                            flash("Addded record to database: " + str(lastrow))
-                        else:
-                            flash('Could not add record to database')
-                   else:
-                        flash("Error in evaluating essay")
-                   
-                elif form.essay.data:
-                   current_db, current_gd, current_out = processEvaluateTextEssay(form.essay.data)
-                   if current_gd:
-                        form.grade.data = current_gd
-                        form.response.data = current_db
-                        form.error.data, form.information.data = formatError (current_out)
-                        lastrow = processSave(form.essay.data, form.grade.data)
-                        if lastrow:
-                            flash("Addded record to database: " + str(lastrow))
-                        else:
-                            flash('Could not add record to database')
-                   else:
-                        flash("Error in evaluating essay")
-                else:
-                    flash ("Please enter an essay or upload a file")
+                flash("Please enter a valid email addresss")
                 
         # For reset
         # ----------
@@ -329,41 +345,8 @@ def igaResponse():
            form.rubric.data = 'Rubric: ' + json.dumps(rubric)
            form.weights.data = 'Weights: ' + json.dumps(weights)
            form.style.data = 'Style: ' + json.dumps(style)
-           
-        # For Email
-        # ---------
-        if request.form.get("Email"):
-            if form.email.data:
-                if form.grade.data:
-                    processEmail(form.email.data, form.essay.data, form.uploadFile.data, form.grade.data, form.response.data, form.error.data )
-                    flash("Email has been sent to: " + form.email.data)
-                else:
-                    if form.uploadFile.data:
-                        filepath = form.uploadFile.data
-                        filepath = filepath.split(':')
-                        filepath = filepath[1].lstrip()
-                        current_db, current_gd, current_out = processEvaluateFile(os.path.join('./',(os.path.relpath((os.path.join(app.config['UPLOAD_FOLDER'], filepath))))))
-                        if current_gd:
-                            form.grade.data = current_gd
-                            form.response.data = current_db
-                            form.error.data, form.information.data = formatError (current_out) 
-                            retVal = processEmail(form.email.data, form.essay.data, form.uploadFile.data, current_gd, current_db, form.error.data )
-                            if retVal:
-                               flash("Email has been sent to: " + form.email.data)      
-                    elif form.essay.data:
-                        current_db, current_gd, current_out = processEvaluateTextEssay(form.essay.data)
-                        if current_gd:
-                            form.grade.data = current_gd
-                            form.response.data = current_db
-                            form.error.data, form.information.data = formatError (current_out) 
-                            retVal = processEmail(form.email.data, form.essay.data, form.uploadFile.data, current_gd, current_db, form.error.data )
-                            if retVal:
-                                flash("Email has been sent to: " + form.email.data)
-                    else:
-                        flash ("Please enter an essay or upload a file")
-            else:
-                flash("Please enter a valid email addresss")
-                    
+
+
         # For File Upload
         # ----------------
         if request.form.get("upload"):
@@ -470,15 +453,17 @@ def formatError(error):
 
 # Saves the Essay in Database
 # ----------------------------   
-def processSave(essay, grade):
+def processSave(name, path, grade, feedback, error, email, upload_date):
     global conn
     global cursor
     if cursor:
         try:
-            args = (essay, float(grade))
+            file = open(path, 'rb')
+            args = (name, file.read(), grade, feedback, error, email, upload_date)
             cursor.execute(command, args)
             # write update to database
             conn.commit()
+            file.close()
             return cursor.lastrowid
         except:
             return None
@@ -489,11 +474,11 @@ def processSave(essay, grade):
 # Sends Email to given email address
 # ----------------------------------
 
-def processEmail(email, essay, uploadFile, grade, response, error):
+def processEmail(email, date):
     if  email:
-        if grade:
+        if date:
             try:
-                email_user.send_email(email, grade, response.encode('utf-8'))
+                email_user.send_email(email, date)
                 return 1
             except:
                 flash("Error in sending Email")
