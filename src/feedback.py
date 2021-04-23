@@ -1,5 +1,18 @@
-# Takes a score of 0, 1, 2, or 3, moving from positive to negative
 def grammar_feedback(score):
+    """
+    When given an integer input between 0 and 3 (inclusive), grammar_feedback() will return a pre-made comment where 0
+    is the best comment and 3 is the worst.
+
+    Parameters
+    ----------
+    score : int
+        Must be between 0 and 3, any other integer will cause the best comment to be used by default.
+
+    Returns
+    -------
+    str
+        A pre-made comment regarding the quality of the essays grammar and spelling.
+    """
     if score == 3:
         text = "Ineffective use of conventions of Standard English for grammar, usage, spelling, capitalization, " \
                "and punctuation.\n"
@@ -18,8 +31,21 @@ def grammar_feedback(score):
     return text
 
 
-# Takes a score of 0, 1, 2, or 3, moving from positive to negative
 def keyword_feedback(score):
+    """
+    When given an integer input between 0 and 3 (inclusive), keyword_feedback() will return a pre-made comment where 0
+    is the best comment and 3 is the worst.
+
+    Parameters
+    ----------
+    score : int
+        Must be between 0 and 3, any other integer will cause the best comment to be used by default.
+
+    Returns
+    -------
+    str
+        A pre-made comment regarding the number of keywords used in the essay.
+    """
     if score == 3:
         text = "Failed to include any keywords pertaining to the topic.\n"
     else:
@@ -35,6 +61,20 @@ def keyword_feedback(score):
 
 
 def length_feedback(score):
+    """
+    When given an integer input between 0 and 2 (inclusive), length_feedback() will return a pre-made comment where 0
+    is meeting the length requirement, 1 is going over the maximum length, and 2 is going under the minimum length.
+
+    Parameters
+    ----------
+    score : int
+        Must be between 0 and 2, any other integer will cause the best comment to be used by default.
+
+    Returns
+    -------
+    str
+        A pre-made comment regarding overall length of the essay.
+    """
     if score == 2:
         text = "Failed to meet the minimum expected number of words for the essay.\n"
     else:
@@ -46,8 +86,21 @@ def length_feedback(score):
     return text
 
 
-# Returns specific feedback about what format error occurred
 def format_feedback(bool_list):
+    """
+    When given a bool list with a length of at least 16, format_feedback() will check for any entries set to true and
+    compile a comment of all of the format errors.
+
+    Parameters
+    ----------
+    bool_list :list of bool
+        Must be a bool list of at least 16 length.
+
+    Returns
+    -------
+    str
+        A pre-made comment regarding the exact kind of format errors were found.
+    """
     text = ""
 
     if bool_list[0]:
@@ -88,53 +141,113 @@ def format_feedback(bool_list):
     return text
 
 
-# Returns feedback on the number of missing references
 def reference_feedback(score):
-    text = "Some references were missing\n"
+    """
+    When given an integer input between 0 and 2 (inclusive), reference_feedback() will return a pre-made comment where 0
+    is the best comment and 2 is the worst.
 
-    if score == 0:
-        text = "All references found\n"
-    if score == 1:
-        text = "Failed to properly reference a majority of the text\n"
+    Parameters
+    ----------
+    score : int
+        Must be between 0 and 2, any other integer will cause the best comment to be used by default.
 
+    Returns
+    -------
+    str
+        A pre-made comment regarding how many references were found or missing.
+    """
+
+    if score == 2:
+        text = "Some references were missing\n"
+    else:
+        if score == 1:
+            text = "Failed to properly reference a majority of the text\n"
+        else:
+            text = "All references found\n"
     return text
 
 
 def idea_feedback(score):
-    text = "The ideas presented in the essay have little to no relevance to the topic. There are few, if any, details" \
-           " that are connected to the ideas presented.\n"
+    """
+    When given an integer input between 0 and 2 (inclusive), idea_feedback() will return a pre-made comment where 0
+    is the best comment and 2 is the worst.
 
-    if score == 0:
-        text = "The ideas presented in the essay are on-topic and well-presented. The details are specific and " \
-               "clearly connected to the ideas.\n"
-    if score == 1:
-        text = "The ideas presented in the essay are on-topic, but the ideas and the details relating to them are not" \
-               " necessarily well-presented.\n"
+    Parameters
+    ----------
+    score : int
+        Must be between 0 and 2, any other integer will cause the best comment to be used by default.
 
+    Returns
+    -------
+    str
+        A pre-made comment regarding the quality of the ideas presented in the essay.
+    """
+    if score == 2:
+        text = "The ideas presented in the essay have little to no relevance to the topic. There are few, if any, " \
+               "details that are connected to the ideas presented.\n"
+    else:
+        if score == 1:
+            text = "The ideas presented in the essay are on-topic, but the ideas and the details relating to them are" \
+                   " not necessarily well-presented.\n"
+        else:
+            text = "The ideas presented in the essay are on-topic and well-presented. The details are specific and " \
+                   "clearly connected to the ideas.\n"
     return text
 
 
 def organization_feedback(score):
-    text = "The flow of the essay lacks smoothness, and the connections between sentences are often not clear.\n"
+    """
+    When given an integer input between 0 and 2 (inclusive), organization_feedback() will return a pre-made comment
+    where 0 is the best comment and 2 is the worst.
 
-    if score == 0:
-        text = "The flow of the essay is smooth. There are clear and logical connections between sentences.\n"
-    if score == 1:
-        text = "The flow of the essay is smooth, but rocky at some points. The connections between sentences are " \
-               "typically clear and logical.\n"
+    Parameters
+    ----------
+    score : int
+        Must be between 0 and 2, any other integer will cause the best comment to be used by default.
+
+    Returns
+    -------
+    str
+        A pre-made comment regarding the quality of the overall organization in the essay.
+    """
+
+    if score == 2:
+        text = "The flow of the essay lacks smoothness, and the connections between sentences are often not clear.\n"
+    else:
+        if score == 1:
+            text = "The flow of the essay is smooth, but rocky at some points. The connections between sentences are " \
+                   "typically clear and logical.\n"
+        else:
+            text = "The flow of the essay is smooth. There are clear and logical connections between sentences.\n"
 
     return text
 
 
 def style_feedback(score):
-    text = "The author has poor command of their language. Sentence structure and/or vocabulary usage is repetitive, " \
-           "and/or the author’s language does not support their purpose.\n"
+    """
+    When given an integer input between 0 and 2 (inclusive), style_feedback() will return a pre-made comment where 0 is
+    the best comment and 2 is the worst.
 
-    if score == 0:
-        text = "The author has total command of their language. Sentence structure and vocabulary usage is varied, " \
-               "and the author effectively uses language to support their purpose.\n"
-    if score == 1:
-        text = "The author has adequate command of their language. Sentence structure and vocabulary usage are " \
-               "effective at communicating the author’s purpose.\n"
+    Parameters
+    ----------
+    score : int
+        Must be between 0 and 2, any other integer will cause the best comment to be used by default.
+
+    Returns
+    -------
+    str
+        A pre-made comment regarding the overall style of the essay.
+    """
+
+    if score == 2:
+        text = "The author has poor command of their language. Sentence structure and/or vocabulary usage is " \
+               "repetitive, and/or the author’s language does not support their purpose.\n"
+    else:
+        if score == 1:
+            text = "The author has adequate command of their language. Sentence structure and vocabulary usage are " \
+                   "effective at communicating the author’s purpose.\n"
+        else:
+            text = "The author has total command of their language. Sentence structure and vocabulary usage is " \
+                   "varied, and the author effectively uses language to support their purpose.\n"
 
     return text

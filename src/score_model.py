@@ -1,13 +1,11 @@
 from abc import ABC, abstractmethod
-from keras.layers import LSTM, Dense, Dropout, Embedding, GlobalMaxPooling1D
+from keras.layers import LSTM, Dense, Embedding, GlobalMaxPooling1D
 from keras.models import Sequential
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
-import math
 import numpy as np
 import pandas
 import score_model_helper
-from sklearn.metrics import cohen_kappa_score
 from sklearn.model_selection import KFold
 import os
 
@@ -74,6 +72,7 @@ class Model(ABC):
             True if the training was successful, otherwise False, most likely due to poorly given x and y.
         """
         cv = KFold(n_splits=n_splits, shuffle=True)
+        fifteen, ten, five, t = 0, 0, 0, 0
 
         if x is None or y is None:
             return False
@@ -118,14 +117,11 @@ class Model(ABC):
             # Test LSTM model on test data
             y_pred = self._model.predict(x_test_seq)
 
-            twenty_five, twenty, fifteen, ten, five, j = 0, 0, 0, 0, 0, 0
+            j = 0
             for i in y_test.index.values:
                 differance = abs(y_test.loc[i, 'normal'] - y_pred[0])
                 j += 1
-                if differance < 0.25:
-                    twenty_five += 1
-                if differance < 0.2:
-                    twenty += 1
+                t += 1
                 if differance < 0.15:
                     fifteen += 1
                 if differance < 0.1:
@@ -133,11 +129,9 @@ class Model(ABC):
                 if differance < 0.05:
                     five += 1
 
-            print("Number of Essays Within 25 Points: " + str(twenty_five / len(y_pred) * 100) + "%")
-            print("Number of Essays Within 20 Points: " + str(twenty / len(y_pred) * 100) + "%")
-            print("Number of Essays Within 15 Points: " + str(fifteen / len(y_pred) * 100) + "%")
-            print("Number of Essays Within 10 Points: " + str(ten / len(y_pred) * 100) + "%")
-            print("Number of Essays Within 5 Points: " + str(five / len(y_pred) * 100) + "%")
+            print("Number of Essays Within 15 Points: " + str(fifteen * 100 / t) + "%")
+            print("Number of Essays Within 10 Points: " + str(ten * 100 / t) + "%")
+            print("Number of Essays Within 5 Points: " + str(five * 100 / t) + "%")
 
             # Save the final iteration of the trained model
             if count == n_splits:
@@ -328,7 +322,7 @@ class IdeaModel(Model):
                 else:
                     y.loc[i, 'normal'] = 1.0
 
-        return self.train_and_test(x, y, 4, 10)
+        return self.train_and_test(x, y, 2, 6)
 
 
 class OrganizationModel(Model):
@@ -392,7 +386,7 @@ class OrganizationModel(Model):
                 else:
                     y.loc[i, 'normal'] = 1.0
 
-        return self.train_and_test(x, y, 4, 10)
+        return self.train_and_test(x, y, 4, 4)
 
 
 class StyleModel(Model):
@@ -413,7 +407,7 @@ class StyleModel(Model):
         else:
             self._embedding = embedding
         self._model.add(Embedding(self._vocab_size, 300, weights=[self._embedding], input_length=200, trainable=False))
-        self._model.add(LSTM(128, dropout=0.2, return_sequences=True))
+        self._model.add(LSTM(128, dropout=0.1, return_sequences=True))
         self._model.add(GlobalMaxPooling1D())
         self._model.add(Dense(64, activation='relu'))
         self._model.add(Dense(1, activation='sigmoid'))
@@ -456,7 +450,4 @@ class StyleModel(Model):
                 else:
                     y.loc[i, 'normal'] = 1.0
 
-        return self.train_and_test(x, y, 4, 10)
-
-model = ScoreModel()
-model.load_data('../data/training_set.tsv')
+        return self.train_and_test(x, y, 8, 4)

@@ -182,7 +182,7 @@ class Format:
 
         Returns
         -------
-        List
+        list of str
             A list of fonts.
         """
         a = []
@@ -198,8 +198,9 @@ class Format:
 
         Returns
         -------
-        list
-            A list of pairs, where each pair is a font name and the associated size used.
+        list of tuples
+            A list of pairs, where each pair is a pair of the font name and the associated size used, followed by the
+            number of times the set of fonts and sizes is used.
         """
         fonts = []
 
@@ -237,7 +238,7 @@ class Format:
 
         Returns
         -------
-        List
+        list
             A list of the three floats, the first being the line spacing, followed by the after paragraph and before
             paragraph spacings.
         """

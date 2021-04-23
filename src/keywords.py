@@ -55,6 +55,15 @@ class KeyWords:
 
         return pair
 
+    def get_keywords(self):
+        """
+        Returns
+        -------
+        list of str
+            A list of all currently used keywords.
+        """
+        return self.__keys
+
     def add_keyword(self, word):
         """
         Use to add a keyword to the current keyword list, as well as add it to the given .csv file assuming one was

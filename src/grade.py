@@ -140,7 +140,7 @@ class Grade:
 
         Returns
         -------
-        tuple
+        tuple of str, int, str
             A tuple containing debug(string), points(integer), and feedback(string).
             Debug contains information from every section that was graded.
             Grade is on a scale of 0 - 100 that represents the final given grade. This value starts at 100 and has
@@ -228,7 +228,7 @@ class Grade:
 
         Returns
         -------
-        tuple
+        tuple of int, str, str
             A tuple containing points(integer), corrected_text(string), debug(string), and feedback(string).
             Points is the number of points lost in this section, being between 0 and rubric['grammar'].
             Corrected_text is the given after being corrected for grammar and spelling mistakes. It is recommended that
@@ -267,7 +267,7 @@ class Grade:
 
         Returns
         -------
-        tuple
+        tuple of int, str, str
             A tuple containing points(integer), debug(string), and feedback(string).
             Points is the number of points lost in this section, being between 0 and rubric['key'].
             Debug contains a list of pairs, where each pair is the keyword and the number of occurrences of said keyword
@@ -304,7 +304,7 @@ class Grade:
 
         Returns
         -------
-        tuple
+        tuple of int, str, str
             A tuple containing points(integer), debug(string), and feedback(string).
             Points is the number of points lost in this section, being between 0 and rubric['length'].
             Debug contains the number of words as well as the number of pages if applicable.
@@ -343,7 +343,7 @@ class Grade:
 
         Returns
         -------
-        tuple
+        tuple of int, str, str
             A tuple containing points(integer), debug(string), and feedback(string).
             Points is the number of points lost in this section, being between 0 and rubric['model'].
             Debug the score given by the score model, idea model, organization model, and style model.
@@ -381,7 +381,7 @@ class Grade:
 
         Returns
         -------
-        tuple
+        tuple of int, str, str
             A tuple containing points(integer), debug(string), and feedback(string).
             Points is the number of points lost in this section, being between 0 and rubric['format'].
             Debug will contain the file's default style and font table.
@@ -491,7 +491,7 @@ class Grade:
 
         Returns
         -------
-        tuple
+        tuple of int, str, str
             A tuple containing points(integer), debug(string), and feedback(string).
             Points is the number of points lost in this section, being between 0 and rubric['length'].
             Debug contains the number of missing references.
@@ -638,10 +638,10 @@ class Grade:
         """
         Returns
         -------
-        list
-            The list of keywords currently being used.
+        list of str
+            A list of the currently used keywords.
         """
-        return self.__words
+        return self.__words.get_keywords()
 
     def add_keyword(self, word):
         """
