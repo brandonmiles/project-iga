@@ -335,17 +335,14 @@ input {
 								{{ wtf.form_field(form.uploadFile, class='form-control code', placeholder='') }}  
 						</div>
 						{{ wtf.form_field(form.essay, class='form-control', style="height: 500px", placeholder='') }}
+						{{ wtf.form_field(form.email, class='form-control code', style ="height:30px; ", placeholder='') }}
+							<button type="submit" name="Evaluate" class="btn btn-primary" value = "Evaluate">Submit</button>
+							<button type="submit" name="Reset" class="btn btn-primary" value = "Reset">Refresh</button>
 					</div>
 					
 			</div>
-			
-			<div class="panel-footer" style="float:left; width:100%; height:100%">
-							<button type="submit" name="Evaluate" class="btn btn-primary" value = "Evaluate">Evaluate</button>
-							<button type="submit" name="Save" class="btn btn-primary" value = "Save">Save</button>
-							<button type="submit" name="Email" class="btn btn-primary" value = "Email">Email</button>
-							<button type="submit" name="Reset" class="btn btn-primary" value = "Reset">Refresh</button>
-			</div>
-			<div class="panel panel-primary" style="padding-top:60px">
+
+			<div class="panel panel-primary" style="padding-top:0px">
 					<div class="panel-heading">
 						<div class="panel-heading row">
 							
@@ -359,8 +356,6 @@ input {
 						{{ wtf.form_field(form.rubric, class='form-control code', style ="height:30px;  ", placeholder='') }}
 						{{ wtf.form_field(form.weights, class='form-control code', style ="height:30px;  ", placeholder='') }}
 						{{ wtf.form_field(form.style, class='form-control code', style ="height:30px;", placeholder='') }}
-						<hr>
-						{{ wtf.form_field(form.email, class='form-control code', style ="height:30px; ", placeholder='') }}
 					</div>
 					
 			</div>
