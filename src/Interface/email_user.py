@@ -1,12 +1,19 @@
 import smtplib
 import ssl
-import email_config
 import urllib.parse
+from cryptography.fernet import Fernet
 
 port = 465  # For SSL
 smtp_server = "smtp.gmail.com"
-sender_email = email_config.EMAIL_CONFIG['email']
-password = email_config.EMAIL_CONFIG['password']
+sender_email = 'IntelligentGrader@gmail.com'
+key = b'lYJzFVOf9A3zGHVVcqgdch3chXf-tkt9ET5bxCmPe7k='
+cipher_suite = Fernet(key)
+# decrypt password
+with open('email_info', 'rb') as file_object:
+    for line in file_object:
+        encrypted = line
+decrypted_bytes = (cipher_suite.decrypt(encrypted))
+password = bytes(decrypted_bytes).decode("utf-8") #convert to string
 
 
 def send_email(receiver_email, date):
