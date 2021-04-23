@@ -133,15 +133,15 @@ class Model(ABC):
                 if differance < 0.05:
                     five += 1
 
-            print("Number of Essays Within 25 Points: " + str(twenty_five / len(y_pred)) + "%")
-            print("Number of Essays Within 20 Points: " + str(twenty / len(y_pred)) + "%")
-            print("Number of Essays Within 15 Points: " + str(fifteen / len(y_pred)) + "%")
-            print("Number of Essays Within 10 Points: " + str(ten / len(y_pred)) + "%")
-            print("Number of Essays Within 5 Points: " + str(five / len(y_pred)) + "%")
+            print("Number of Essays Within 25 Points: " + str(twenty_five / len(y_pred) * 100) + "%")
+            print("Number of Essays Within 20 Points: " + str(twenty / len(y_pred) * 100) + "%")
+            print("Number of Essays Within 15 Points: " + str(fifteen / len(y_pred) * 100) + "%")
+            print("Number of Essays Within 10 Points: " + str(ten / len(y_pred) * 100) + "%")
+            print("Number of Essays Within 5 Points: " + str(five / len(y_pred) * 100) + "%")
 
             # Save the final iteration of the trained model
-            if count == n_splits:
-                self._model.save(self._filepath)
+            #if count == n_splits:
+                #self._model.save(self._filepath)
 
             count += 1
         return True
@@ -457,3 +457,6 @@ class StyleModel(Model):
                     y.loc[i, 'normal'] = 1.0
 
         return self.train_and_test(x, y, 4, 10)
+
+model = ScoreModel()
+model.load_data('../data/training_set.tsv')
