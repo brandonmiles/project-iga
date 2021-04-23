@@ -321,16 +321,7 @@ PROMPT_7 = "Write about patience. Being patient means that you are understanding
 PROMPT_8 = "We all understand the benefits of laughter. For example, someone once said, “Laughter is the shortest " \
            "distance between two people.” Many other people believe that laughter is an important part of any " \
            "relationship. Tell a true story in which laughter was one element or part."
-
-# If you want to run this program specifically, you can put the appropriate
-# code into this main() function.
-def main():
-    return
-
-# This stops all the code from running when Sphinx imports the module.
-if __name__ == '__main__':
-    main()
-
+           
 stuff = pandas.read_csv(FILE_NAME, sep=',', encoding='ISO-8859-1')
 stuff = stuff.copy()
 
