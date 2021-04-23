@@ -35,42 +35,146 @@
 <dl class="py function">
 <dt id="feedback.format_feedback">
 <code class="sig-prename descclassname"><span class="pre">feedback.</span></code><code class="sig-name descname"><span class="pre">format_feedback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bool_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feedback.format_feedback" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>When given a bool list with a length of at least 16, format_feedback() will check for any entries set to true and
+compile a comment of all of the format errors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bool_list</strong> (<em>list of bool</em>) – Must be a bool list of at least 16 length.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A pre-made comment regarding the exact kind of format errors were found.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt id="feedback.grammar_feedback">
 <code class="sig-prename descclassname"><span class="pre">feedback.</span></code><code class="sig-name descname"><span class="pre">grammar_feedback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">score</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feedback.grammar_feedback" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>When given an integer input between 0 and 3 (inclusive), grammar_feedback() will return a pre-made comment where 0
+is the best comment and 3 is the worst.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>score</strong> (<em>int</em>) – Must be between 0 and 3, any other integer will cause the best comment to be used by default.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A pre-made comment regarding the quality of the essays grammar and spelling.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt id="feedback.idea_feedback">
 <code class="sig-prename descclassname"><span class="pre">feedback.</span></code><code class="sig-name descname"><span class="pre">idea_feedback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">score</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feedback.idea_feedback" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>When given an integer input between 0 and 2 (inclusive), idea_feedback() will return a pre-made comment where 0
+is the best comment and 2 is the worst.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>score</strong> (<em>int</em>) – Must be between 0 and 2, any other integer will cause the best comment to be used by default.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A pre-made comment regarding the quality of the ideas presented in the essay.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt id="feedback.keyword_feedback">
 <code class="sig-prename descclassname"><span class="pre">feedback.</span></code><code class="sig-name descname"><span class="pre">keyword_feedback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">score</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feedback.keyword_feedback" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>When given an integer input between 0 and 3 (inclusive), keyword_feedback() will return a pre-made comment where 0
+is the best comment and 3 is the worst.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>score</strong> (<em>int</em>) – Must be between 0 and 3, any other integer will cause the best comment to be used by default.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A pre-made comment regarding the number of keywords used in the essay.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt id="feedback.length_feedback">
 <code class="sig-prename descclassname"><span class="pre">feedback.</span></code><code class="sig-name descname"><span class="pre">length_feedback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">score</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feedback.length_feedback" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>When given an integer input between 0 and 2 (inclusive), length_feedback() will return a pre-made comment where 0
+is meeting the length requirement, 1 is going over the maximum length, and 2 is going under the minimum length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>score</strong> (<em>int</em>) – Must be between 0 and 2, any other integer will cause the best comment to be used by default.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A pre-made comment regarding overall length of the essay.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt id="feedback.organization_feedback">
 <code class="sig-prename descclassname"><span class="pre">feedback.</span></code><code class="sig-name descname"><span class="pre">organization_feedback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">score</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feedback.organization_feedback" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>When given an integer input between 0 and 2 (inclusive), organization_feedback() will return a pre-made comment
+where 0 is the best comment and 2 is the worst.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>score</strong> (<em>int</em>) – Must be between 0 and 2, any other integer will cause the best comment to be used by default.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A pre-made comment regarding the quality of the overall organization in the essay.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt id="feedback.reference_feedback">
 <code class="sig-prename descclassname"><span class="pre">feedback.</span></code><code class="sig-name descname"><span class="pre">reference_feedback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">score</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feedback.reference_feedback" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>When given an integer input between 0 and 2 (inclusive), reference_feedback() will return a pre-made comment where 0
+is the best comment and 2 is the worst.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>score</strong> (<em>int</em>) – Must be between 0 and 2, any other integer will cause the best comment to be used by default.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A pre-made comment regarding how many references were found or missing.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt id="feedback.style_feedback">
 <code class="sig-prename descclassname"><span class="pre">feedback.</span></code><code class="sig-name descname"><span class="pre">style_feedback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">score</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#feedback.style_feedback" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>When given an integer input between 0 and 2 (inclusive), style_feedback() will return a pre-made comment where 0 is
+the best comment and 2 is the worst.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>score</strong> (<em>int</em>) – Must be between 0 and 2, any other integer will cause the best comment to be used by default.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A pre-made comment regarding the overall style of the essay.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 </div>
 
