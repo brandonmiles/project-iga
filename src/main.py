@@ -1,10 +1,6 @@
 import pandas
 from grade import Grade
-import nltk
 
-nltk.download('averaged_perceptron_tagger')
-nltk.download('maxent_ne_chunker')
-nltk.download('words')
 
 # How many points each graded section is worth, use None to remove from the rubric
 rubric = {'grammar': 20, 'key': 10, 'length': 20, 'format': 20, 'model': 20, 'reference': 10}
@@ -18,12 +14,12 @@ try:
 
     # Grade each essay
     a = 0
-    #for i in test_data['essay']:
-        #a += 1
-        #print("-----------------------------------------------------------------------------------------------------\n")
-        #print("Essay: ", a)
-        #db, gd, out = g.get_grade(i)
-        #print(db + "Grade: " + str(gd) + "\n" + out)
+    for i in test_data['essay']:
+        a += 1
+        print("-----------------------------------------------------------------------------------------------------\n")
+        print("Essay: ", a)
+        db, gd, out = g.get_grade(i)
+        print(db + "Grade: " + str(gd) + "\n" + out)
 
 except FileNotFoundError:
     print("../data/test_set.tsv not found")

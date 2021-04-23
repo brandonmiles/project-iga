@@ -140,8 +140,8 @@ class Model(ABC):
             print("Number of Essays Within 5 Points: " + str(five / len(y_pred) * 100) + "%")
 
             # Save the final iteration of the trained model
-            #if count == n_splits:
-                #self._model.save(self._filepath)
+            if count == n_splits:
+                self._model.save(self._filepath)
 
             count += 1
         return True
