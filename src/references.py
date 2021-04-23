@@ -1,15 +1,21 @@
 import re
 import nltk
-import nltk
 from nltk import word_tokenize
 
-# nltk.download('averaged_perceptron_tagger')
-# nltk.download('maxent_ne_chunker')
-# nltk.download('words')
 
-
-# Returns number of missing references
 def extract_citation(text):
+    """
+    Used to return the total number of references missing in the references section of the provided text.
+    Parameters
+    ----------
+    text : str
+        The text you want to check for references.
+    Returns
+    -------
+    integer
+        The total number of missing references in the provided text.
+    """
+    
     matches = re.findall(r'\(.*?\)', text)  # extract everything inside a '()'
     keywords = []  # store named entities
     names = []  # store names
@@ -28,16 +34,16 @@ def extract_citation(text):
     # extract the names from keywords
     for i in range(len(keywords)):
         names.append(keywords[i][0][0])
-
-    x = text.rfind("Reference")
+    
+    # find the last instance of the word 'reference', this is where the list of references start
+    text = text.lower()
+    x = text.rfind("reference")
     if x:
-        references = text[x:].lower()
+        references = text[x:]
         for i in range(len(names)):
             if names[i].lower() in references:
                 found_references.append(names[i])
             else:
                 missing_references.append(names[i])
-
-    # print(found_references)
 
     return len(missing_references)
