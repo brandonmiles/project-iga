@@ -1,0 +1,529 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>grade module &#8212; Intelligent Grading Assistant 0.9 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-grade">
+<span id="grade-module"></span><h1>grade module<a class="headerlink" href="#module-grade" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="grade.Grade">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">grade.</span></code><code class="sig-name descname"><span class="pre">Grade</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rubric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dictionary_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'../data/dictionary.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'../data/standard.json'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class is used to actually grade an essay based on the given rubric and weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rubric</strong> (<em>dict</em>) – rubric should be a dictionary with the same keys as grade.get_rubric(). rubric will be used to calculate exactly
+how many points each graded section is worth, and any graded section can be skipped by simply making a key
+equal to None.
+This is a required parameter to initialize Grade().</p></li>
+<li><p><strong>weights</strong> (<em>dict</em>) – weights should be a dictionary with the same keys as the grade.get_weights(). weights contains various alterable
+values that effect how each section is graded.
+This is a required parameter to initialize Grade().</p></li>
+<li><p><strong>dictionary_path</strong> (<em>str</em>) – This should be the filepath to a .csv file, which contains a list of keywords that will be searched for in the
+essay. It does have a default value, but you may set the path to None instead if you wish to not start with a
+set of keywords and instead have an empty set that can be slowly added and removed from.
+Not a required parameter.</p></li>
+<li><p><strong>style</strong> (<em>dict</em>) – style should be a dictionary with the same keys as grade.get_style() or a filepath to a .json file which
+contains a style dictionary. This has a default value set, but if the file is missing, an Exception will be
+thrown.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>Exception</strong> – A variety of generic exceptions each with their own associated text to describe the error.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="grade.Grade.add_keyword">
+<code class="sig-name descname"><span class="pre">add_keyword</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.add_keyword" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the given word to the keyword list and to the .csv if one was provided beforehand.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>word</strong> (<em>str</em>) – A single word to be added to a list of words.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the word was added successfully to the list and dictionary file, otherwise False.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.clear_keywords">
+<code class="sig-name descname"><span class="pre">clear_keywords</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.clear_keywords" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if the word list is cleared completely</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.get_grade">
+<code class="sig-name descname"><span class="pre">get_grade</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.get_grade" title="Permalink to this definition">¶</a></dt>
+<dd><p>This will grade every section in the given rubric</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – This can either be raw essay text or a filepath to a .txt, .pdf, or .docx. it will assume that it was
+given a filepath if the the beginning of the string is either ./ or ../</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>A tuple containing debug(string), points(integer), and feedback(string).
+Debug contains information from every section that was graded.
+Grade is on a scale of 0 - 100 that represents the final given grade. This value starts at 100 and has</p>
+<blockquote>
+<div><p>points taken off by each section until there is at minimum 0 left.</p>
+</div></blockquote>
+<p>Feedback contains all of the feedback information from every section that was graded.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.get_keywords">
+<code class="sig-name descname"><span class="pre">get_keywords</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.get_keywords" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The list of keywords currently being used.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.get_rubric">
+<code class="sig-name descname"><span class="pre">get_rubric</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.get_rubric" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Gets the currently used rubric.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.get_style">
+<code class="sig-name descname"><span class="pre">get_style</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.get_style" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the currently used style or load a style from a filepath if given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em>) – If supplied, the style found in the file will replace the currently used style.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A style dictionary, unless the style couldn’t be loaded from the file, raises an Exception then.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.get_weights">
+<code class="sig-name descname"><span class="pre">get_weights</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.get_weights" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The currently used weights dictionary.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.grade_format">
+<code class="sig-name descname"><span class="pre">grade_format</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.grade_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to grade only the format section.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>word</strong> (<a class="reference internal" href="format.html#format.Format" title="format.Format"><em>format.Format</em></a>) – An object generated by format when given a docx, will be read for its listed format</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A tuple containing points(integer), debug(string), and feedback(string).
+Points is the number of points lost in this section, being between 0 and rubric[‘format’].
+Debug will contain the file’s default style and font table.
+Feedback will contain a pre-written string based on every format mistake.
+See feedback.py for more info.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.grade_grammar">
+<code class="sig-name descname"><span class="pre">grade_grammar</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.grade_grammar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to grade only the grammar and spelling of a given text.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – The raw text that will be checked for grammar and spelling mistakes</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>A tuple containing points(integer), corrected_text(string), debug(string), and feedback(string).
+Points is the number of points lost in this section, being between 0 and rubric[‘grammar’].
+Corrected_text is the given after being corrected for grammar and spelling mistakes. It is recommended that</p>
+<blockquote>
+<div><p>this is used in place of the original text when grading the other sections.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Debug will contain the number of grammar and spelling mistakes in the text, followed by a list of pairs,</dt><dd><p>where each pair contains the mistake and the suggested correction.</p>
+</dd>
+</dl>
+<p>Feedback will contain a pre-written string based on the number of points being taken off.
+See feedback.py for more info.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.grade_key">
+<code class="sig-name descname"><span class="pre">grade_key</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.grade_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to grade only the keyword section.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – Preferably the corrected text from grade_grammar(), text will be searched for all of the currently defined
+keywords.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>A tuple containing points(integer), debug(string), and feedback(string).
+Points is the number of points lost in this section, being between 0 and rubric[‘key’].
+Debug contains a list of pairs, where each pair is the keyword and the number of occurrences of said keyword</p>
+<blockquote>
+<div><p>in the given text.</p>
+</div></blockquote>
+<p>Feedback will contain a pre-written string based on the number of points being taken off.
+See feedback.py for more info.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.grade_length">
+<code class="sig-name descname"><span class="pre">grade_length</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.grade_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to grade only the length section.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> (<em>str</em>) – Preferably the corrected text from grade_grammar(), the number of words contained in text will be used.</p></li>
+<li><p><strong>page</strong> (<em>int</em>) – An int that a doc or docx may have that can be used in place of word count grading</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A tuple containing points(integer), debug(string), and feedback(string).
+Points is the number of points lost in this section, being between 0 and rubric[‘length’].
+Debug contains the number of words as well as the number of pages if applicable.
+Feedback will contain a pre-written string based on the number of points being taken off.
+See feedback.py for more info.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.grade_model">
+<code class="sig-name descname"><span class="pre">grade_model</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.grade_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to grade only the model section.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – Preferably the corrected text from grade_grammar(), will be fed into all four models to be evaluated.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A tuple containing points(integer), debug(string), and feedback(string).
+Points is the number of points lost in this section, being between 0 and rubric[‘model’].
+Debug the score given by the score model, idea model, organization model, and style model.
+Feedback will contain a pre-written string based on the score given by the three feedback models.
+See feedback.py for more info.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.grade_reference">
+<code class="sig-name descname"><span class="pre">grade_reference</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.grade_reference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to grade only the reference section.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – Preferably the corrected text from grade_grammar(), the text will be searched for any references.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A tuple containing points(integer), debug(string), and feedback(string).
+Points is the number of points lost in this section, being between 0 and rubric[‘length’].
+Debug contains the number of missing references.
+Feedback will contain a pre-written string based on the number of points being taken off.
+See feedback.py for more info.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.remove_keyword">
+<code class="sig-name descname"><span class="pre">remove_keyword</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.remove_keyword" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to remove a word from the keyword list and .csv file if one exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>word</strong> (<em>str</em>) – A single word to be added to the keyword list</p></li>
+<li><p><strong>if removed successfully from both the list and .csv file</strong> (<em>True</em>) – </p></li>
+<li><p><strong>False.</strong> (<em>otherwise</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.retrain_model">
+<code class="sig-name descname"><span class="pre">retrain_model</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'score'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.retrain_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call this if you want to retrain a model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filepath</strong> (<em>str</em>) – This should be a file path to a .csv file containing the data to train the model with.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – This parameter specifies which model is to be retrained. Acceptable strings are ‘score’, ‘idea’,
+‘organization’, or ‘style’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns True if the model was trained successfully, otherwise False.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.update_rubric">
+<code class="sig-name descname"><span class="pre">update_rubric</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rubric</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.update_rubric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to replace the currently used rubric.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rubric</strong> (<em>dict</em>) – Should be a dictionary with the same keys as grade.get_rubric().</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>If the supplied rubric is correct, return True, otherwise False.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.update_style">
+<code class="sig-name descname"><span class="pre">update_style</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">style</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.update_style" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the currently used style as well as potentially store a style for later use.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>style</strong> (<em>dict</em>) – Should match the dictionary given by calling grade.get_style().</p></li>
+<li><p><strong>filepath</strong> (<em>str</em>) – If provided, the given style will be stored at the file location.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the given style was correct and was saved correctly if a filepath was given, otherwise False.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="grade.Grade.update_weights">
+<code class="sig-name descname"><span class="pre">update_weights</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#grade.Grade.update_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to replace the currently used weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>weights</strong> (<em>dict</em>) – Should match the keys given by grade.get_weights().</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the given weights is correct, otherwise returns False.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="grade.get_rubric">
+<code class="sig-prename descclassname"><span class="pre">grade.</span></code><code class="sig-name descname"><span class="pre">get_rubric</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#grade.get_rubric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to get the dictionary structure that defines the rubric.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>There are six total sections, including grammar and spelling, keyword usage, length of the essay, format of the
+essay, the grade the model assigns the essay, and the number of references missing. Note that the format section
+will only be graded if a doc or docx is being used, as neither txt, pdf, or raw text support formatting.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="grade.get_style">
+<code class="sig-prename descclassname"><span class="pre">grade.</span></code><code class="sig-name descname"><span class="pre">get_style</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#grade.get_style" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to get the dictionary structure that defines the style.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Please refer to format.py for the full description of the style dictionary keys.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="grade.get_weights">
+<code class="sig-prename descclassname"><span class="pre">grade.</span></code><code class="sig-name descname"><span class="pre">get_weights</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#grade.get_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to get the dictionary structure that defines the weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The dictionary contains the following keys:
+‘grammar’ allows you to specify how many points are lost per grammar or spelling mistake.
+‘allowed_mistakes’ lets you specify how many grammar or spelling mistakes are allowed before points are lost.
+‘key_max’ is the expected number of different keywords the essay should have.
+‘key_min’ is how many keywords the essay need to have before they simply get zero points for the section.
+‘word_min’ is a measure of how many words are expected minimum or else they lose full points for the section.
+‘word_max’ is the maximum number of words an essay can have before losing half the points for the section.
+‘page_min’ same as word_min except if you want a different standard to judge word doc files.
+‘page_max’ as as word_max with the same exception as page_min.
+‘format’ represents how many points are lost for every formatting error, word doc only.
+‘reference’ is the number of points lost for every missing reference in the essay.
+Please Note that allowed_mistakes, word_min, word_max, page_min, and page max can all be None if you don’t wish
+to provide a value, but every other key must have an associated non-None integer value.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Intelligent Grading Assistant</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Nathan Champagne, Jason Garza, Gautam Iyer, Brandon Miles, Sujan Shrestha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/src/grade.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,167 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>keywords module &#8212; Intelligent Grading Assistant 0.9 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-keywords">
+<span id="keywords-module"></span><h1>keywords module<a class="headerlink" href="#module-keywords" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="keywords.KeyWords">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">keywords.</span></code><code class="sig-name descname"><span class="pre">KeyWords</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#keywords.KeyWords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class is used exclusively to search the text with a list of keywords and record their occurrence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em>) – An optional filepath to a .csv containing a list of keywords. Not providing a filepath means starting with an
+empty keyword list that can be filled in over time.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="keywords.KeyWords.add_keyword">
+<code class="sig-name descname"><span class="pre">add_keyword</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#keywords.KeyWords.add_keyword" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to add a keyword to the current keyword list, as well as add it to the given .csv file assuming one was
+given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>word</strong> (<em>str</em>) – This should be a single word to be added to the keywords</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if added successfully, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="keywords.KeyWords.occurrence">
+<code class="sig-name descname"><span class="pre">occurrence</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#keywords.KeyWords.occurrence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to count the occurrence of every keyword in a given text.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – This is the raw text that you want to check.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This is a list of pairs, where each pair consists of the keyword followed by the number of occurrences of it
+in the text.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="keywords.KeyWords.remove_keyword">
+<code class="sig-name descname"><span class="pre">remove_keyword</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#keywords.KeyWords.remove_keyword" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to remove a keyword to the current keyword list, as well as remove it from the given .csv file assuming
+one was given. If the file doesn’t exist in the keyword list, then simply return True.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>word</strong> (<em>str</em>) – This should be a single word to be removed from the keywords</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if added successfully, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Intelligent Grading Assistant</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Nathan Champagne, Jason Garza, Gautam Iyer, Brandon Miles, Sujan Shrestha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/src/keywords.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

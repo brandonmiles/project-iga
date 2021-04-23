@@ -1,0 +1,309 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>format module &#8212; Intelligent Grading Assistant 0.9 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-format">
+<span id="format-module"></span><h1>format module<a class="headerlink" href="#module-format" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="format.Format">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">format.</span></code><code class="sig-name descname"><span class="pre">Format</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#format.Format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class will handle all of the doc and docx xml decompiling to generate a dictionary of the document’s currently
+used fonts, sizes, and other formatting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em>) – This should be a filepath to the docx that you want to read. Giving it any other type of file will produce
+an error.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="format.Format.get_default_style">
+<code class="sig-name descname"><span class="pre">get_default_style</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#format.Format.get_default_style" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The default style used by the document.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="format.Format.get_font">
+<code class="sig-name descname"><span class="pre">get_font</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#format.Format.get_font" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to get all of the fonts used as well as their sizes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A list of pairs, where each pair is a font name and the associated size used.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="format.Format.get_font_table">
+<code class="sig-name descname"><span class="pre">get_font_table</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#format.Format.get_font_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to get the font table provided by the xml document, but know that by default, it will always include Times
+New Roman, Calibri and Calibri Light in the table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A list of fonts.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="format.Format.get_indentation">
+<code class="sig-name descname"><span class="pre">get_indentation</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#format.Format.get_indentation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to get a score of the documents indention, being between 0.0 and 1.0, where 0.0 no indention and 1.0 is all
+indention.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A float, where 0 is no indents, 1 is all indented, and getting close to 0.5 means either inconsistent
+indentation or non-standard indentation, either way bad.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="format.Format.get_margin">
+<code class="sig-name descname"><span class="pre">get_margin</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#format.Format.get_margin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to get a margins score, where 0.0 is consistent margins, with 1.0 and above being increasingly inconsistent
+margins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A float between 0.0 and 2.0 describing the margins consistency.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="format.Format.get_page_count">
+<code class="sig-name descname"><span class="pre">get_page_count</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#format.Format.get_page_count" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>An integer describing the number of pages in the document.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="format.Format.get_spacing">
+<code class="sig-name descname"><span class="pre">get_spacing</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#format.Format.get_spacing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to get the used line and paragraph spacings used in the document.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A list of the three floats, the first being the line spacing, followed by the after paragraph and before
+paragraph spacings.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="format.Format.get_text">
+<code class="sig-name descname"><span class="pre">get_text</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#format.Format.get_text" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A string containing the all of the document’s text.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="format.Format.get_word_count">
+<code class="sig-name descname"><span class="pre">get_word_count</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#format.Format.get_word_count" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>An integer describing the word count.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="format.get_format_file">
+<code class="sig-prename descclassname"><span class="pre">format.</span></code><code class="sig-name descname"><span class="pre">get_format_file</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#format.get_format_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to retrieve a style from a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em>) – A string describing the location of a .json file holding a style.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A style dictionary matching grade.get_style().</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>Exception</strong> – Raises an exception with a message about the missing file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="format.get_style">
+<code class="sig-prename descclassname"><span class="pre">format.</span></code><code class="sig-name descname"><span class="pre">get_style</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#format.get_style" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to get the dictionary structure that defines the style.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The dictionary has multiple keys, each can be set to None to void grading for that particular aspect of the
+format.
+‘font’ should be a list of the allowed fonts for the paper.
+‘size’ is an int that represents the allowed font size.
+‘line_spacing’ is a float that describes the spacing between every line.
+‘after_spacing’ is a float that describes the spacing after every paragraph.
+‘before_spacing’ is a float that describes the spacing before every paragraph.
+‘page_width’ is a float that describes the width of the page in inches.
+‘page_height’ is the same as ‘page_width’, except for height.
+‘left_margin’ is a float that describes the size of the left margin in inches.
+‘bottom_margin’, ‘top_margin’, and ‘right_margin’ are all the same as ‘left_margin’.
+‘header’ is a float in inches that describes the size of the header.
+‘footer’ and ‘gutter’ are the same as the ‘header’.
+‘indent’ is a float in inches for how far indented the beginning of each paragraph should be.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="format.update_format_file">
+<code class="sig-prename descclassname"><span class="pre">format.</span></code><code class="sig-name descname"><span class="pre">update_format_file</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#format.update_format_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to update a .json file’s style</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filepath</strong> (<em>str</em>) – A string that specifies a .json file location</p></li>
+<li><p><strong>style</strong> (<em>dict</em>) – The style you want to store in the file, must match grade.get_style()’s keys.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Will return True if the style was stored successfully, otherwise False is either the style was wrong or there
+was a permission error.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Intelligent Grading Assistant</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Nathan Champagne, Jason Garza, Gautam Iyer, Brandon Miles, Sujan Shrestha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/src/format.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

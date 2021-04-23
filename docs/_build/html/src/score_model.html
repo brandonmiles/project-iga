@@ -1,0 +1,314 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>score_model module &#8212; Intelligent Grading Assistant 0.9 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-score_model">
+<span id="score-model-module"></span><h1>score_model module<a class="headerlink" href="#module-score_model" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="score_model.IdeaModel">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">score_model.</span></code><code class="sig-name descname"><span class="pre">IdeaModel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#score_model.IdeaModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#score_model.Model" title="score_model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">score_model.Model</span></code></a></p>
+<p>This model should be used to give a score that represents the quality of ideas in the essay.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>embedding</strong> (<em>numpy.ndarray</em>) – Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="score_model.IdeaModel.load_data">
+<code class="sig-name descname"><span class="pre">load_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#score_model.IdeaModel.load_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to load the data into the feedback model, followed by training the new model from the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em>) – Should be a filepath to a .csv file with an ‘essay_id’, ‘essay’ and ‘comments’ column, where the ‘comments’
+column should contain ‘ID#,ORG#,STY#’, where the # is either 1, 2, or 3. If not provided, then the default
+filepath will be used in its place if one exists.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the model training was successful, otherwise False.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="score_model.Model">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">score_model.</span></code><code class="sig-name descname"><span class="pre">Model</span></code><a class="headerlink" href="#score_model.Model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>This is an abstract class that should NOT be initialized, but only used to define the variables and functions used
+by the other model classes</p>
+<dl class="py method">
+<dt id="score_model.Model.evaluate">
+<code class="sig-name descname"><span class="pre">evaluate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">essay</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#score_model.Model.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to give a score between 0.0 and 1.0 to the essay. If the model’s weights can’t be found, the model will
+automatically be built from the given data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>essay</strong> (<em>str</em>) – Should be the essay text you want to evaluate</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A float32 between 0.0 and 1.0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="score_model.Model.get_embedding">
+<code class="sig-name descname"><span class="pre">get_embedding</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#score_model.Model.get_embedding" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>An embedding matrix to be used between models with the same parameters in order to reduce load times.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="score_model.Model.get_embedding_matrix">
+<code class="sig-name descname"><span class="pre">get_embedding_matrix</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#score_model.Model.get_embedding_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>An embedding matrix that matches the vocabulary size of the model. This function does take a long time to
+load, so reduce the calls to it when possible.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="score_model.Model.load_data">
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">load_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#score_model.Model.load_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function needs to be replaced by any inheriting classes. This function should should create an x pandas
+Dataframe that contains an ‘essays’ column as well as a y pandas Dataframe that contains the same indexes as
+x and a ‘normal’ column that represents the normalized scores of the x essays.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em>) – This should be a filepath to a .csv file containing the data to train the model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="score_model.Model.train_and_test">
+<code class="sig-name descname"><span class="pre">train_and_test</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_splits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#score_model.Model.train_and_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Actually trains the model so it can be used to evaluate essays. The models filepath will be used to save the
+weights of the model at the end of training. Progress will be outputted with relevant information about the
+accuracy of the model as it is being trained.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>pandas.Dataframe</em>) – Should be a dataframe containing a ‘essay’ column to train the model with.</p></li>
+<li><p><strong>y</strong> (<em>pandas.Dataframe</em>) – Should be a dataframe with the same indexes as x and a ‘normal’ column whose type is float32, being between
+0.0 and 1.0.</p></li>
+<li><p><strong>n_splits</strong> (<em>int</em>) – How many Kfolds the model will undergo.</p></li>
+<li><p><strong>epochs</strong> (<em>int</em>) – How many epochs the model will go through for every Kfold</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the training was successful, otherwise False, most likely due to poorly given x and y.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="score_model.OrganizationModel">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">score_model.</span></code><code class="sig-name descname"><span class="pre">OrganizationModel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#score_model.OrganizationModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#score_model.Model" title="score_model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">score_model.Model</span></code></a></p>
+<p>This model should be used to give a score that represents the quality of the organization in the essay.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>embedding</strong> (<em>numpy.ndarray</em>) – Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="score_model.OrganizationModel.load_data">
+<code class="sig-name descname"><span class="pre">load_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#score_model.OrganizationModel.load_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to load the data into the feedback model, followed by training the new model from the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em>) – Should be a filepath to a .csv file with an ‘essay_id’, ‘essay’ and ‘comments’ column, where the ‘comments’
+column should contain ‘ID#,ORG#,STY#’, where the # is either 1, 2, or 3. If not provided, then the default
+filepath will be used in its place if one exists.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the model training was successful, otherwise False.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="score_model.ScoreModel">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">score_model.</span></code><code class="sig-name descname"><span class="pre">ScoreModel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#score_model.ScoreModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#score_model.Model" title="score_model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">score_model.Model</span></code></a></p>
+<p>This model should be used to give a grade to the overall quality of the essay.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>embedding</strong> (<em>numpy.ndarray</em>) – Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="score_model.ScoreModel.load_data">
+<code class="sig-name descname"><span class="pre">load_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#score_model.ScoreModel.load_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to load the data into the score model, followed by training the new model from the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em>) – Should be a filepath to a .csv file with an ‘essay_id’, ‘essay_set’, ‘essay’, and ‘domain1_score’ column.
+If not provided, then the default filepath will be used in its place if one exists.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the model training was successful, otherwise False.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="score_model.StyleModel">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">score_model.</span></code><code class="sig-name descname"><span class="pre">StyleModel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#score_model.StyleModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#score_model.Model" title="score_model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">score_model.Model</span></code></a></p>
+<p>This model should be used to give a score that represents the quality of the style in the essay.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>embedding</strong> (<em>numpy.ndarray</em>) – Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="score_model.StyleModel.load_data">
+<code class="sig-name descname"><span class="pre">load_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#score_model.StyleModel.load_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use to load the data into the feedback model, followed by training the new model from the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em>) – Should be a filepath to a .csv file with an ‘essay_id’, ‘essay’ and ‘comments’ column, where the ‘comments’
+column should contain ‘ID#,ORG#,STY#’, where the # is either 1, 2, or 3. If not provided, then the default
+filepath will be used in its place if one exists.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the model training was successful, otherwise False.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Intelligent Grading Assistant</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Nathan Champagne, Jason Garza, Gautam Iyer, Brandon Miles, Sujan Shrestha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/src/score_model.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
