@@ -163,7 +163,7 @@ class Model(ABC):
             self.load_data()
             return self._model.predict(text_arr)[0, 0]
 
-    def get_embedding_matrix(self):
+    def get_embedding_matrix(self, filepath):
         """
         Returns
         -------
@@ -173,7 +173,7 @@ class Model(ABC):
         """
         embeddings_index = {}
 
-        f = open('../data/glove6B/glove.6B.300d.txt', encoding='utf8')
+        f = open(filepath, encoding='utf8')
         for line in f:
             values = line.split()
             word = values[0]
@@ -201,12 +201,12 @@ class ScoreModel(Model):
         Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
     """
 
-    def __init__(self, filepath, data_path, embedding=None):
+    def __init__(self, filepath, data_path, embedding_path, embedding=None):
         super().__init__()
-        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/training_set.tsv')['essay'])
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe(data_path)['essay'])
         self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
-            self._embedding = self.get_embedding_matrix()
+            self._embedding = self.get_embedding_matrix(embedding_path)
         else:
             self._embedding = embedding
         self._model.add(Embedding(self._vocab_size, 300, weights=[self._embedding], input_length=200, trainable=False))
@@ -273,12 +273,12 @@ class IdeaModel(Model):
         Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
     """
 
-    def __init__(self, filepath, data_path, embedding=None):
+    def __init__(self, filepath, data_path, embedding_path, embedding=None):
         super().__init__()
-        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe(data_path)['essay'])
         self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
-            self._embedding = self.get_embedding_matrix()
+            self._embedding = self.get_embedding_matrix(embedding_path)
         else:
             self._embedding = embedding
         self._model.add(Embedding(self._vocab_size, 300, weights=[self._embedding], input_length=200, trainable=False))
@@ -338,12 +338,12 @@ class OrganizationModel(Model):
         Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
     """
 
-    def __init__(self, filepath, data_path, embedding=None):
+    def __init__(self, filepath, data_path, embedding_path, embedding=None):
         super().__init__()
-        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe(data_path)['essay'])
         self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
-            self._embedding = self.get_embedding_matrix()
+            self._embedding = self.get_embedding_matrix(embedding_path)
         else:
             self._embedding = embedding
         self._model.add(Embedding(self._vocab_size, 300, weights=[self._embedding], input_length=200, trainable=False))
@@ -403,12 +403,12 @@ class StyleModel(Model):
         Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
     """
 
-    def __init__(self, filepath, data_path, embedding=None):
+    def __init__(self, filepath, data_path, embedding_path, embedding=None):
         super().__init__()
-        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe(data_path)['essay'])
         self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
-            self._embedding = self.get_embedding_matrix()
+            self._embedding = self.get_embedding_matrix(embedding_path)
         else:
             self._embedding = embedding
         self._model.add(Embedding(self._vocab_size, 300, weights=[self._embedding], input_length=200, trainable=False))
@@ -461,8 +461,9 @@ class StyleModel(Model):
 # If you want to run this program specifically, you can put the appropriate
 # code into this main() function.
 def main():
-    model = ScoreModel()
-    model.load_data('../data/training_set.tsv')
+    model = ScoreModel('../model_weights/final_lstm.h5', '../../data/training_set.tsv',
+                       '../../data/glove6B/glove.6B.300d.txt')
+    model.load_data('../../data/training_set.tsv')
 
 
 # This stops all the code from running when Sphinx imports the module.

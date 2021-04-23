@@ -124,12 +124,12 @@ class Grade:
                  mdata='../../data/training_set.tsv', ifile='../model_weights/final_idea_lstm.h5',
                  idata='../../data/comment_set.tsv', ofile='../model_weights/final_organization_lstm.h5',
                  odata='../../data/comment_set.tsv', sfile='../model_weights/final_style_lstm.h5',
-                 sdata='../../data/comment_set.tsv'):
+                 sdata='../../data/comment_set.tsv', epath='../../data/glove6B/glove.6B.300d.txt'):
         # Creating the models
-        self.__model = ScoreModel(mfile, mdata)
-        self.__idea_model = IdeaModel(ifile, idata)
-        self.__organization_model = OrganizationModel(ofile, odata, self.__idea_model.get_embedding())
-        self.__style_model = StyleModel(sfile, sdata, self.__idea_model.get_embedding())
+        self.__model = ScoreModel(mfile, mdata, epath)
+        self.__idea_model = IdeaModel(ifile, idata, epath)
+        self.__organization_model = OrganizationModel(ofile, odata, epath, self.__idea_model.get_embedding())
+        self.__style_model = StyleModel(sfile, sdata, epath, self.__idea_model.get_embedding())
         # These are left empty until something is done otherwise
         self.__words = keywords.KeyWords()
 
@@ -145,14 +145,15 @@ class Grade:
             raise Exception("Given weight keys do not match skeleton keys")
         # Storing the given style if it is correct or retrieving the given filepath
         if type(style) is str:
-            style = format.get_format_file(style)
-        if type(style) is dict:
-            if set(style.keys()) == set(get_style().keys()):
-                self.__style = style
-            else:
-                raise Exception("Given style keys do not match skeleton keys")
+            self.__style = format.get_format_file(style)
         else:
-            raise Exception("Given style not a is dict or a filepath")
+            if type(style) is dict:
+                if set(style.keys()) == set(get_style().keys()):
+                    self.__style = style
+                else:
+                    raise Exception("Given style keys do not match skeleton keys")
+            else:
+                raise Exception("Given style not a is dict or a filepath")
         # Getting the keyword list if a filepath was given
         if dictionary_path is not None:
             try:
