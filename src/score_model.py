@@ -10,6 +10,15 @@ from sklearn.model_selection import KFold
 import os
 
 
+# If you want to run this program specifically, you can put the appropriate
+# code into this main() function.
+def main():
+    return
+
+# This stops all the code from running when Sphinx imports the module.
+if __name__ == '__main__':
+    main()
+
 class Model(ABC):
     """
     This is an abstract class that should NOT be initialized, but only used to define the variables and functions used

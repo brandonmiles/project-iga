@@ -7,6 +7,15 @@ from score_model import ScoreModel, IdeaModel, OrganizationModel, StyleModel
 from pdfminer.high_level import extract_text
 
 
+# If you want to run this program specifically, you can put the appropriate
+# code into this main() function.
+def main():
+	return
+
+# This stops all the code from running when Sphinx imports the module
+if __name__ == '__main__':
+	main()
+
 def get_style():
     """
     Use to get the dictionary structure that defines the style.
