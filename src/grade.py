@@ -2,7 +2,6 @@ import grammar_check
 import keywords
 import feedback
 import format
-import os
 import references
 from score_model import ScoreModel, IdeaModel, OrganizationModel, StyleModel
 from pdfminer.high_level import extract_text
@@ -11,11 +10,13 @@ from pdfminer.high_level import extract_text
 # If you want to run this program specifically, you can put the appropriate
 # code into this main() function.
 def main():
-	return
+    return
+
 
 # This stops all the code from running when Sphinx imports the module.
 if __name__ == '__main__':
-	main()
+    main()
+
 
 def get_style():
     """
@@ -92,6 +93,22 @@ class Grade:
         style should be a dictionary with the same keys as grade.get_style() or a filepath to a .json file which
         contains a style dictionary. This has a default value set, but if the file is missing, an Exception will be
         thrown.
+    mfile : str
+        This is the filepath to where the score model's weights should be saved.
+    mdata : str
+        This is the filepath to where the score model's training and testing data should be stored.
+    ifile : str
+        This is the filepath to where the score model's weights should be saved.
+    idata : str
+        This is the filepath to where the score model's training and testing data should be stored.
+    ofile : str
+        This is the filepath to where the score model's weights should be saved.
+    odata : str
+        This is the filepath to where the score model's training and testing data should be stored.
+    sfile : str
+        This is the filepath to where the score model's weights should be saved.
+    sdata : str
+        This is the filepath to where the score model's training and testing data should be stored.
 
     Raises
     ------
@@ -102,12 +119,17 @@ class Grade:
     __slots__ = ('__model', '__idea_model', '__organization_model', '__style_model', '__words', '__rubric', '__weights',
                  '__style')
 
-    def __init__(self, rubric, weights, dictionary_path=os.path.relpath('../data/dictionary.csv', start='src'), style=os.path.relpath('../data/standard.json', start='src')):
+    def __init__(self, rubric, weights, dictionary_path='../../data/dictionary.csv',
+                 style='../../data/standard.json', mfile='../model_weights/final_lstm.h5',
+                 mdata='../../data/training_set.tsv', ifile='../model_weights/final_idea_lstm.h5',
+                 idata='../../data/comment_set.tsv', ofile='../model_weights/final_organization_lstm.h5',
+                 odata='../../data/comment_set.tsv', sfile='../model_weights/final_style_lstm.h5',
+                 sdata='../../data/comment_set.tsv'):
         # Creating the models
-        self.__model = ScoreModel()
-        self.__idea_model = IdeaModel()
-        self.__organization_model = OrganizationModel(self.__idea_model.get_embedding())
-        self.__style_model = StyleModel(self.__idea_model.get_embedding())
+        self.__model = ScoreModel(mfile, mdata)
+        self.__idea_model = IdeaModel(ifile, idata)
+        self.__organization_model = OrganizationModel(ofile, odata, self.__idea_model.get_embedding())
+        self.__style_model = StyleModel(sfile, sdata, self.__idea_model.get_embedding())
         # These are left empty until something is done otherwise
         self.__words = keywords.KeyWords()
 

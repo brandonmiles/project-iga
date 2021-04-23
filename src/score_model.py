@@ -5,15 +5,15 @@ from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 import numpy as np
 import pandas
+import os
 import score_model_helper
 from sklearn.model_selection import KFold
-import os
 
 
 class Model(ABC):
     """
-    The Model class is an abstract class that should NOT be initialized, but only used to define the variables and functions used
-    by the other model classes.
+    The Model class is an abstract class that should NOT be initialized, but only used to define the variables and
+    functions used by the other model classes.
     """
     __slots__ = ('_tokenizer', '_model', '_vocab_size', '_filepath', '_embedding', '__data_path')
 
@@ -28,9 +28,9 @@ class Model(ABC):
     @abstractmethod
     def load_data(self, filepath=None):
         """
-        The load_data function needs to be replaced by any inheriting classes. This function should should create an 'x' pandas
-        Dataframe that contains an 'essays' column as well as a y pandas Dataframe that contains the same indexes as
-        x and a 'normal' column that represents the normalized scores of the x essays.
+        The load_data function needs to be replaced by any inheriting classes. This function should should create an 'x'
+         pandas Dataframe that contains an 'essays' column as well as a y pandas Dataframe that contains the same
+         indexes as x and a 'normal' column that represents the normalized scores of the x essays.
 
         Parameters
         ----------
@@ -48,7 +48,7 @@ class Model(ABC):
         """
         return self._embedding
 
-    def train_and_test(self, x, y,  n_splits, epochs):
+    def train_and_test(self, x, y, n_splits, epochs):
         """
         Actually trains the model so it can be used to evaluate essays. The models filepath will be used to save the
         weights of the model at the end of training. Progress will be outputted with relevant information about the
@@ -173,7 +173,7 @@ class Model(ABC):
         """
         embeddings_index = {}
 
-        f = open(os.path.relpath('../data/glove6B/glove.6B.300d.txt', start='src'), encoding='utf8')
+        f = open('../data/glove6B/glove.6B.300d.txt', encoding='utf8')
         for line in f:
             values = line.split()
             word = values[0]
@@ -200,9 +200,10 @@ class ScoreModel(Model):
     embedding : numpy.ndarray
         Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
     """
-    def __init__(self, embedding=None):
+
+    def __init__(self, filepath, data_path, embedding=None):
         super().__init__()
-        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe(os.path.relpath('../data/training_set.tsv', start='src'))['essay'])
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/training_set.tsv')['essay'])
         self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
             self._embedding = self.get_embedding_matrix()
@@ -214,8 +215,8 @@ class ScoreModel(Model):
         self._model.add(Dense(64, activation='relu'))
         self._model.add(Dense(1, activation='sigmoid'))
         self._model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
-        self._filepath = os.path.relpath('./model_weights/final_lstm.h5', start='src')
-        self.__data_path = os.path.relpath('../data/training_set.tsv', start='src')
+        self._filepath = filepath
+        self.__data_path = data_path
 
     def load_data(self, filepath=None):
         """
@@ -271,9 +272,10 @@ class IdeaModel(Model):
     embedding : numpy.ndarray
         Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
     """
-    def __init__(self, embedding=None):
+
+    def __init__(self, filepath, data_path, embedding=None):
         super().__init__()
-        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe(os.path.relpath('../data/comment_set.tsv', start='src'))['essay'])
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
         self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
             self._embedding = self.get_embedding_matrix()
@@ -285,8 +287,8 @@ class IdeaModel(Model):
         self._model.add(Dense(64, activation='relu'))
         self._model.add(Dense(1, activation='sigmoid'))
         self._model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
-        self._filepath = os.path.relpath('./model_weights/final_idea_lstm.h5', start='src')
-        self.__data_path = os.path.relpath('../data/comment_set.tsv', start='src')
+        self._filepath = filepath
+        self.__data_path = data_path
 
     def load_data(self, filepath=None):
         """
@@ -335,9 +337,10 @@ class OrganizationModel(Model):
     embedding : numpy.ndarray
         Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
     """
-    def __init__(self, embedding=None):
+
+    def __init__(self, filepath, data_path, embedding=None):
         super().__init__()
-        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe(os.path.relpath('../data/comment_set.tsv', start='src'))['essay'])
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
         self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
             self._embedding = self.get_embedding_matrix()
@@ -349,8 +352,8 @@ class OrganizationModel(Model):
         self._model.add(Dense(64, activation='relu'))
         self._model.add(Dense(1, activation='sigmoid'))
         self._model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
-        self._filepath = os.path.relpath('./model_weights/final_organization_lstm.h5', start='src')
-        self.__data_path = os.path.relpath('../data/comment_set.tsv', start='src')
+        self._filepath = filepath
+        self.__data_path = data_path
 
     def load_data(self, filepath=None):
         """
@@ -399,9 +402,10 @@ class StyleModel(Model):
     embedding : numpy.ndarray
         Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
     """
-    def __init__(self, embedding=None):
+
+    def __init__(self, filepath, data_path, embedding=None):
         super().__init__()
-        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe(os.path.relpath('../data/comment_set.tsv', start='src'))['essay'])
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
         self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
             self._embedding = self.get_embedding_matrix()
@@ -413,8 +417,8 @@ class StyleModel(Model):
         self._model.add(Dense(64, activation='relu'))
         self._model.add(Dense(1, activation='sigmoid'))
         self._model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
-        self._filepath = os.path.relpath('./model_weights/final_style_lstm.h5', start='src')
-        self.__data_path = os.path.relpath('../data/comment_set.tsv', start='src')
+        self._filepath = filepath
+        self.__data_path = data_path
 
     def load_data(self, filepath=None):
         """
@@ -459,6 +463,7 @@ class StyleModel(Model):
 def main():
     model = ScoreModel()
     model.load_data('../data/training_set.tsv')
+
 
 # This stops all the code from running when Sphinx imports the module.
 if __name__ == '__main__':
