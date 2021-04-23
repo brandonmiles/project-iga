@@ -10,7 +10,8 @@
 
 from flask import Flask, request, render_template, flash, redirect, url_for
 import os
-import os.path
+import sys
+sys.path.insert(0, os.path.abspath('..'))
 from werkzeug.utils import secure_filename
 from flask import send_from_directory
 from formData.IGAFormData import IGAFormData
