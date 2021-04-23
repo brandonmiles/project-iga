@@ -1,0 +1,16 @@
+pandas
+zipfile
+json
+keywords
+pdfminer
+pdfminer.six
+language_tool_python
+nltk
+re
+numpy
+gensim
+keras
+math
+sklearn
+os
+pickle
