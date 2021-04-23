@@ -10,19 +10,10 @@ from sklearn.model_selection import KFold
 import os
 
 
-# If you want to run this program specifically, you can put the appropriate
-# code into this main() function.
-def main():
-    return
-
-# This stops all the code from running when Sphinx imports the module.
-if __name__ == '__main__':
-    main()
-
 class Model(ABC):
     """
-    This is an abstract class that should NOT be initialized, but only used to define the variables and functions used
-    by the other model classes
+    The Model class is an abstract class that should NOT be initialized, but only used to define the variables and functions used
+    by the other model classes.
     """
     __slots__ = ('_tokenizer', '_model', '_vocab_size', '_filepath', '_embedding', '__data_path')
 
@@ -37,7 +28,7 @@ class Model(ABC):
     @abstractmethod
     def load_data(self, filepath=None):
         """
-        This function needs to be replaced by any inheriting classes. This function should should create an x pandas
+        The load_data function needs to be replaced by any inheriting classes. This function should should create an 'x' pandas
         Dataframe that contains an 'essays' column as well as a y pandas Dataframe that contains the same indexes as
         x and a 'normal' column that represents the normalized scores of the x essays.
 
@@ -182,7 +173,7 @@ class Model(ABC):
         """
         embeddings_index = {}
 
-        f = open('../data/glove6B/glove.6B.300d.txt', encoding='utf8')
+        f = open(os.path.relpath('../data/glove6B/glove.6B.300d.txt', start='src'), encoding='utf8')
         for line in f:
             values = line.split()
             word = values[0]
@@ -201,7 +192,8 @@ class Model(ABC):
 
 class ScoreModel(Model):
     """
-    This model should be used to give a grade to the overall quality of the essay.
+    The ScoreModel class defines the parameters of the score model and provides functions for training
+    essays on this model. The model derives its 
 
     Parameters
     ----------
@@ -210,7 +202,7 @@ class ScoreModel(Model):
     """
     def __init__(self, embedding=None):
         super().__init__()
-        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/training_set.tsv')['essay'])
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe(os.path.relpath('../data/training_set.tsv', start='src'))['essay'])
         self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
             self._embedding = self.get_embedding_matrix()
@@ -222,8 +214,8 @@ class ScoreModel(Model):
         self._model.add(Dense(64, activation='relu'))
         self._model.add(Dense(1, activation='sigmoid'))
         self._model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
-        self._filepath = './model_weights/final_lstm.h5'
-        self.__data_path = '../data/training_set.tsv'
+        self._filepath = os.path.relpath('./model_weights/final_lstm.h5', start='src')
+        self.__data_path = os.path.relpath('../data/training_set.tsv', start='src')
 
     def load_data(self, filepath=None):
         """
@@ -281,7 +273,7 @@ class IdeaModel(Model):
     """
     def __init__(self, embedding=None):
         super().__init__()
-        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe(os.path.relpath('../data/comment_set.tsv', start='src'))['essay'])
         self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
             self._embedding = self.get_embedding_matrix()
@@ -293,8 +285,8 @@ class IdeaModel(Model):
         self._model.add(Dense(64, activation='relu'))
         self._model.add(Dense(1, activation='sigmoid'))
         self._model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
-        self._filepath = './model_weights/final_idea_lstm.h5'
-        self.__data_path = '../data/comment_set.tsv'
+        self._filepath = os.path.relpath('./model_weights/final_idea_lstm.h5', start='src')
+        self.__data_path = os.path.relpath('../data/comment_set.tsv', start='src')
 
     def load_data(self, filepath=None):
         """
@@ -345,7 +337,7 @@ class OrganizationModel(Model):
     """
     def __init__(self, embedding=None):
         super().__init__()
-        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe(os.path.relpath('../data/comment_set.tsv', start='src'))['essay'])
         self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
             self._embedding = self.get_embedding_matrix()
@@ -357,8 +349,8 @@ class OrganizationModel(Model):
         self._model.add(Dense(64, activation='relu'))
         self._model.add(Dense(1, activation='sigmoid'))
         self._model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
-        self._filepath = './model_weights/final_organization_lstm.h5'
-        self.__data_path = '../data/comment_set.tsv'
+        self._filepath = os.path.relpath('./model_weights/final_organization_lstm.h5', start='src')
+        self.__data_path = os.path.relpath('../data/comment_set.tsv', start='src')
 
     def load_data(self, filepath=None):
         """
@@ -409,7 +401,7 @@ class StyleModel(Model):
     """
     def __init__(self, embedding=None):
         super().__init__()
-        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe('../data/comment_set.tsv')['essay'])
+        self._tokenizer.fit_on_texts(score_model_helper.get_dataframe(os.path.relpath('../data/comment_set.tsv', start='src'))['essay'])
         self._vocab_size = len(self._tokenizer.word_index) + 1
         if embedding is None:
             self._embedding = self.get_embedding_matrix()
@@ -421,8 +413,8 @@ class StyleModel(Model):
         self._model.add(Dense(64, activation='relu'))
         self._model.add(Dense(1, activation='sigmoid'))
         self._model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
-        self._filepath = './model_weights/final_style_lstm.h5'
-        self.__data_path = '../data/comment_set.tsv'
+        self._filepath = os.path.relpath('./model_weights/final_style_lstm.h5', start='src')
+        self.__data_path = os.path.relpath('../data/comment_set.tsv', start='src')
 
     def load_data(self, filepath=None):
         """
@@ -460,3 +452,14 @@ class StyleModel(Model):
                     y.loc[i, 'normal'] = 1.0
 
         return self.train_and_test(x, y, 8, 4)
+
+
+# If you want to run this program specifically, you can put the appropriate
+# code into this main() function.
+def main():
+    model = ScoreModel()
+    model.load_data('../data/training_set.tsv')
+
+# This stops all the code from running when Sphinx imports the module.
+if __name__ == '__main__':
+    main()

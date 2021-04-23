@@ -2,6 +2,7 @@ import grammar_check
 import keywords
 import feedback
 import format
+import os
 import references
 from score_model import ScoreModel, IdeaModel, OrganizationModel, StyleModel
 from pdfminer.high_level import extract_text
@@ -101,7 +102,7 @@ class Grade:
     __slots__ = ('__model', '__idea_model', '__organization_model', '__style_model', '__words', '__rubric', '__weights',
                  '__style')
 
-    def __init__(self, rubric, weights, dictionary_path='../data/dictionary.csv', style='../data/standard.json'):
+    def __init__(self, rubric, weights, dictionary_path=os.path.relpath('../data/dictionary.csv', start='src'), style=os.path.relpath('../data/standard.json', start='src')):
         # Creating the models
         self.__model = ScoreModel()
         self.__idea_model = IdeaModel()

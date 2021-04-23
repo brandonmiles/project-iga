@@ -1,3 +1,4 @@
+import os
 import pandas
 from grade import Grade
 
@@ -12,7 +13,7 @@ def main():
     g = Grade(rubric, weights)
 
     try:
-        test_data = pandas.read_csv('../data/test_set.tsv', sep='\t', encoding='ISO-8859-1')
+        test_data = pandas.read_csv(os.relpath('../data/test_set.tsv', start='src'), sep='\t', encoding='ISO-8859-1')
 
         # Grade each essay
         a = 0
