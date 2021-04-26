@@ -1,4 +1,5 @@
 __pycache__/
 model_weights/
 ../data/glove6B/
-../Interface/__pycache__/
+../interface/__pycache__/
+../interface/formData/__pycache__/
