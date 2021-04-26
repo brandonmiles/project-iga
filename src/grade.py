@@ -69,6 +69,35 @@ def get_weights():
             'word_max': None, 'page_min': None, 'page_max': None, 'format': 0, 'reference': 0}
 
 
+def get_filepath():
+    """
+    Use to get the dictionary structure that defines the weights.
+
+    Returns
+    -------
+    dict
+        The dictionary contains the following keys:
+        'model' is a filepath to the score model's saved weights.
+        'model_data' is a filepath to the score model's training data.
+        'idea' is a filepath to the idea model's saved weights.
+        'idea_data' is a filepath to the idea model's training data.
+        'organization' is a filepath to the organization model's saved weights.
+        'organization_data' is a filepath to the organization model's training data.
+        'style' is a filepath to the style model's saved weights.
+        'style_data' is a filepath to the style model's training data.
+        'embedding' is a filepath to glove.6B.300d.txt.
+        'style_json' is a filepath to a .json file where a style for format.py is stored.
+        'dictionary' is a filepath to a .csv file containing the keywords to be used when grading papers. Can be set to
+         None if you don't want to start with any keywords.
+    """
+    return {'model': 'model_weights/final_lstm.h5', 'model_data': '../data/training_set.tsv',
+            'idea': 'model_weights/final_idea_lstm.h5', 'idea_data': '../data/comment_set.tsv',
+            'organization': 'model_weights/final_organization_lstm.h5', 'organization_data': '../data/comment_set.tsv',
+            'style': 'model_weights/final_style_lstm.h5', 'style_data': '../data/comment_set.tsv',
+            'embedding': '../data/glove6B/glove.6B.300d.txt', 'style_json': '../data/standard.json',
+            'dictionary': '../data/dictionary.csv'}
+
+
 class Grade:
     """
     This class is used to actually grade an essay based on the given rubric and weights.
@@ -79,87 +108,73 @@ class Grade:
         rubric should be a dictionary with the same keys as grade.get_rubric(). rubric will be used to calculate exactly
         how many points each graded section is worth, and any graded section can be skipped by simply making a key
         equal to None.
-        This is a required parameter to initialize Grade().
     weights : dict
         weights should be a dictionary with the same keys as the grade.get_weights(). weights contains various alterable
         values that effect how each section is graded.
-        This is a required parameter to initialize Grade().
-    dictionary_path : str
-        This should be the filepath to a .csv file, which contains a list of keywords that will be searched for in the
-        essay. It does have a default value, but you may set the path to None instead if you wish to not start with a
-        set of keywords and instead have an empty set that can be slowly added and removed from.
-        Not a required parameter.
+    start : str
+        This is a relative filepath to the src folder location, where all other file paths are based off of.
+    filepath : dict
+        filepath should be a dictionary with the same keys as grade.get_filepath(). All file paths needed for grade to
+        run properly can be found here, and should be the relative filepath from src.
     style : dict
         style should be a dictionary with the same keys as grade.get_style() or a filepath to a .json file which
         contains a style dictionary. This has a default value set, but if the file is missing, an Exception will be
         thrown.
-    mfile : str
-        This is the filepath to where the score model's weights should be saved.
-    mdata : str
-        This is the filepath to where the score model's training and testing data should be stored.
-    ifile : str
-        This is the filepath to where the score model's weights should be saved.
-    idata : str
-        This is the filepath to where the score model's training and testing data should be stored.
-    ofile : str
-        This is the filepath to where the score model's weights should be saved.
-    odata : str
-        This is the filepath to where the score model's training and testing data should be stored.
-    sfile : str
-        This is the filepath to where the score model's weights should be saved.
-    sdata : str
-        This is the filepath to where the score model's training and testing data should be stored.
 
     Raises
     ------
-    Exception
-        A variety of generic exceptions each with their own associated text to describe the error.
+    KeyError
+        Getting this error means that more likely than not, a passed in parameter was wrong, such as a dictionary not
+        having the correct keys.
+    FileNotFoundError
+        If you get this, then one of the given file paths was incorrect or the file was simply missing.
     """
 
     __slots__ = ('__model', '__idea_model', '__organization_model', '__style_model', '__words', '__rubric', '__weights',
-                 '__style')
+                 '__style', '__filepath')
 
-    def __init__(self, rubric, weights, dictionary_path='../../data/dictionary.csv',
-                 style='../../data/standard.json', mfile='../model_weights/final_lstm.h5',
-                 mdata='../../data/training_set.tsv', ifile='../model_weights/final_idea_lstm.h5',
-                 idata='../../data/comment_set.tsv', ofile='../model_weights/final_organization_lstm.h5',
-                 odata='../../data/comment_set.tsv', sfile='../model_weights/final_style_lstm.h5',
-                 sdata='../../data/comment_set.tsv', epath='../../data/glove6B/glove.6B.300d.txt'):
+    def __init__(self, rubric, weights, start, filepath=None, style=None):
+        # Setting up file paths
+        if type(filepath) is not dict:
+            filepath = get_filepath()
+        self.__filepath = get_filepath()
+        for i in filepath.keys():
+            self.__filepath[i] = start + filepath[i]
+
         # Creating the models
-        self.__model = ScoreModel(mfile, mdata, epath)
-        self.__idea_model = IdeaModel(ifile, idata, epath)
-        self.__organization_model = OrganizationModel(ofile, odata, epath, self.__idea_model.get_embedding())
-        self.__style_model = StyleModel(sfile, sdata, epath, self.__idea_model.get_embedding())
+        self.__model = ScoreModel(self.__filepath['model'], self.__filepath['model_data'], self.__filepath['embedding'])
+        self.__idea_model = IdeaModel(self.__filepath['idea'], self.__filepath['idea_data'],
+                                      self.__filepath['embedding'])
+        self.__organization_model = OrganizationModel(self.__filepath['organization'],
+                                                      self.__filepath['organization_data'],
+                                                      self.__filepath['embedding'], self.__idea_model.get_embedding())
+        self.__style_model = StyleModel(self.__filepath['style'], self.__filepath['style_data'],
+                                        self.__filepath['embedding'], self.__idea_model.get_embedding())
+
         # These are left empty until something is done otherwise
         self.__words = keywords.KeyWords()
 
         # Storing the given rubric if it is correct
-        if set(rubric.keys()) == set(get_rubric().keys()):
+        if type(rubric) is dict and set(rubric.keys()) == set(get_rubric().keys()):
             self.__rubric = rubric
         else:
-            raise Exception("Given rubric keys do not match skeleton keys")
+            raise KeyError("Given rubric keys do not match skeleton keys")
         # Storing the given weights if it is correct
-        if set(weights) == set(get_weights().keys()):
+        if type(weights) is dict and set(weights) == set(get_weights().keys()):
             self.__weights = weights
         else:
-            raise Exception("Given weight keys do not match skeleton keys")
+            raise KeyError("Given weight keys do not match skeleton keys")
         # Storing the given style if it is correct or retrieving the given filepath
-        if type(style) is str:
-            self.__style = format.get_format_file(style)
-        else:
-            if type(style) is dict:
-                if set(style.keys()) == set(get_style().keys()):
-                    self.__style = style
-                else:
-                    raise Exception("Given style keys do not match skeleton keys")
+        if type(style) is dict:
+            if set(style.keys()) == set(get_style().keys()):
+                self.__style = style
             else:
-                raise Exception("Given style not a is dict or a filepath")
+                raise KeyError("Given style keys do not match skeleton keys")
+        else:
+            self.__style = format.get_format_file(self.__filepath['style_json'])
         # Getting the keyword list if a filepath was given
-        if dictionary_path is not None:
-            try:
-                self.__words = keywords.KeyWords(dictionary_path)
-            except FileNotFoundError:
-                raise Exception(str(dictionary_path) + " not found")
+        if filepath['dictionary'] is not None:
+            self.__words = keywords.KeyWords(self.__filepath['dictionary'])
 
     def get_grade(self, text):
         """
@@ -179,6 +194,11 @@ class Grade:
             Grade is on a scale of 0 - 100 that represents the final given grade. This value starts at 100 and has
              points taken off by each section until there is at minimum 0 left.
             Feedback contains all of the feedback information from every section that was graded.
+
+        Raises
+        ------
+        FileNotFoundError
+            The given filepath was either wrong, is missing, or is the wrong type.
         """
         grade, page, word = 100, None, None
         debug, output, t = "", "", ""
@@ -189,26 +209,17 @@ class Grade:
 
             # File must be a docx
             if f[len(f) - 1] == "docx":
-                try:
-                    word = format.Format(text)
-                    t = word.get_text()
-                    page = word.get_page_count()
-                except FileNotFoundError:
-                    return None, None, None
+                word = format.Format(text)
+                t = word.get_text()
+                page = word.get_page_count()
             # File must be a pdf
             if f[len(f) - 1] == "pdf":
-                try:
-                    t = extract_text(text)
-                    # PDF reader has trouble dealing with large line spacing, so this is an attempt to fix it.
-                    t = t.replace("\n\n", " ").replace("  ", " ").replace("  ", " ")
-                except FileNotFoundError:
-                    return None, None, None
+                t = extract_text(text)
+                # PDF reader has trouble dealing with large line spacing, so this is an attempt to fix it.
+                t = t.replace("\n\n", " ").replace("  ", " ").replace("  ", " ")
             # File must be a txt
             if f[(len(f) - 1)] == "txt":
-                try:
-                    t = open(str(text), 'r').read()
-                except FileNotFoundError:
-                    return None, None, None
+                t = open(str(text), 'r').read()
         else:
             t = text
 
@@ -543,14 +554,15 @@ class Grade:
 
         return points, debug, output
 
-    def retrain_model(self, filepath, name="score"):
+    def retrain_model(self, filepath=None, name="score"):
         """
         Call this if you want to retrain a model.
 
         Parameters
         ----------
         filepath : str
-            This should be a file path to a .csv file containing the data to train the model with.
+            This should be a file path to a .csv file containing the data to train the model with. If filepath is None,
+            then the model will attempt to retrain itself based off the previously given data path.
         name : str
             This parameter specifies which model is to be retrained. Acceptable strings are 'score', 'idea',
             'organization', or 'style'.
@@ -585,7 +597,7 @@ class Grade:
         bool
             True if the given style was correct and was saved correctly if a filepath was given, otherwise False.
         """
-        if set(style.keys()) == set(self.__style.keys()):
+        if type(style) is dict and set(style.keys()) == set(self.__style.keys()):
             if filepath is not None:
                 if not format.update_format_file(filepath, style):
                     return False
@@ -634,7 +646,7 @@ class Grade:
         bool
             If the supplied rubric is correct, return True, otherwise False.
         """
-        if set(rubric.keys()) == set(get_rubric().keys()):
+        if type(rubric) is dict and set(rubric.keys()) == set(get_rubric().keys()):
             self.__rubric = rubric
             return True
         return False
@@ -662,7 +674,7 @@ class Grade:
         bool
             True if the given weights is correct, otherwise returns False.
         """
-        if set(weights) == set(get_weights().keys()):
+        if type(weights) is dict and set(weights) == set(get_weights().keys()):
             self.__weights = weights
             return True
         return False

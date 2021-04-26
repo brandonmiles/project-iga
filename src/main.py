@@ -9,12 +9,7 @@ weights = {'grammar': 1, 'allowed_mistakes': 3, 'key_max': 2, 'key_min': 0, 'wor
 
 
 def main():
-    g = Grade(rubric, weights, dictionary_path='../data/dictionary.csv', style='../data/standard.json',
-              mfile='./model_weights/final_lstm.h5', mdata='../data/training_set.tsv',
-              ifile='./model_weights/final_idea_lstm.h5', idata='../data/comment_set.tsv',
-              ofile='./model_weights/final_organization_lstm.h5', odata='../data/comment_set.tsv',
-              sfile='./model_weights/final_style_lstm.h5', sdata='../data/comment_set.tsv',
-              epath='../data/glove6B/glove.6B.300d.txt')
+    g = Grade(rubric, weights, './')
 
     try:
         test_data = pandas.read_csv('../data/test_set.tsv', sep='\t', encoding='ISO-8859-1')

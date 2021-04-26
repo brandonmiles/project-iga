@@ -197,6 +197,12 @@ class ScoreModel(Model):
 
     Parameters
     ----------
+    filepath : str
+        A filepath to where the model weights will be loaded and saved.
+    data_path : str
+        A filepath to where the training data to build the model is located.
+    embedding_path : str
+        A filepath to where the glove.6B.300D.txt is located
     embedding : numpy.ndarray
         Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
     """
@@ -205,10 +211,12 @@ class ScoreModel(Model):
         super().__init__()
         self._tokenizer.fit_on_texts(score_model_helper.get_dataframe(data_path)['essay'])
         self._vocab_size = len(self._tokenizer.word_index) + 1
+
         if embedding is None:
             self._embedding = self.get_embedding_matrix(embedding_path)
         else:
             self._embedding = embedding
+
         self._model.add(Embedding(self._vocab_size, 300, weights=[self._embedding], input_length=200, trainable=False))
         self._model.add(LSTM(128, dropout=0.3, return_sequences=True))
         self._model.add(GlobalMaxPooling1D())
@@ -269,6 +277,12 @@ class IdeaModel(Model):
 
     Parameters
     ----------
+    filepath : str
+        A filepath to where the model weights will be loaded and saved.
+    data_path : str
+        A filepath to where the training data to build the model is located.
+    embedding_path : str
+        A filepath to where the glove.6B.300D.txt is located
     embedding : numpy.ndarray
         Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
     """
@@ -334,6 +348,12 @@ class OrganizationModel(Model):
 
     Parameters
     ----------
+    filepath : str
+        A filepath to where the model weights will be loaded and saved.
+    data_path : str
+        A filepath to where the training data to build the model is located.
+    embedding_path : str
+        A filepath to where the glove.6B.300D.txt is located
     embedding : numpy.ndarray
         Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
     """
@@ -399,6 +419,12 @@ class StyleModel(Model):
 
     Parameters
     ----------
+    filepath : str
+        A filepath to where the model weights will be loaded and saved.
+    data_path : str
+        A filepath to where the training data to build the model is located.
+    embedding_path : str
+        A filepath to where the glove.6B.300D.txt is located
     embedding : numpy.ndarray
         Only provide if you have already generated an embedding matrix of the same vocabulary size beforehand.
     """

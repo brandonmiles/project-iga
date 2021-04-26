@@ -85,7 +85,7 @@ style = {'font': allowed_fonts, 'size': 12, 'line_spacing': 2.0, 'after_spacing'
                       'before_spacing': 0.0, 'page_width': 8.5, 'page_height': 11, 'left_margin': 1.0, 'bottom_margin': 1.0,
                       'right_margin': 1.0, 'top_margin': 1.0, 'header': 0.0, 'footer': 0.0, 'gutter': 0.0, 'indent': 1.0}
 
-gradeModel = Grade(rubric, weights, style=style)
+gradeModel = Grade(rubric, weights, '../', style=style)
 if debug:
     print('Ready!')
     
