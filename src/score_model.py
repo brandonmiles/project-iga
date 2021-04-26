@@ -487,9 +487,9 @@ class StyleModel(Model):
 # If you want to run this program specifically, you can put the appropriate
 # code into this main() function.
 def main():
-    model = ScoreModel('../model_weights/final_lstm.h5', '../../data/training_set.tsv',
-                       '../../data/glove6B/glove.6B.300d.txt')
-    model.load_data('../../data/training_set.tsv')
+    model = ScoreModel('./model_weights/final_lstm.h5', '../data/training_set.tsv',
+                       '../data/glove6B/glove.6B.300d.txt')
+    model.load_data('../data/training_set.tsv')
 
 
 # This stops all the code from running when Sphinx imports the module.
