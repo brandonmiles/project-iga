@@ -7,7 +7,8 @@
 
 # All Imports
 #-------------
-
+import sys
+sys.path.insert(0, '../')
 from flask import Flask, request, render_template, flash, redirect, url_for
 import os
 import os.path
@@ -191,10 +192,10 @@ def uploaded_file(filename):
 
 # Error Handling
 # --------------
-
+"""
 @app.errorhandler(HTTPException)
 def handle_exception(e):
-    """Return JSON instead of HTML for HTTP errors."""
+    \"\"\"Return JSON instead of HTML for HTTP errors.\"\"\"
     # start with the correct headers and status code from the error
     response = e.get_response()
     # replace the body with JSON
@@ -225,7 +226,7 @@ def handle_exception(e):
 
     # now you're handling non-HTTP exceptions only
     return render_template("500_generic.html", e=e), 500
-
+"""
 
 # route that allows users to view their results
 @app.route('/results', methods=['GET', 'POST'])
@@ -491,7 +492,7 @@ def processSave(name, path, grade, feedback, error, email, upload_date):
     if cursor:
         try:
             file = open(path, 'rb')
-            args = (name, file.read(), grade, feedback.encode, error.encode, email, upload_date)
+            args = (name, file.read(), grade, feedback, error, email, upload_date)
             cursor.execute(command, args)
             # write update to database
             conn.commit()
