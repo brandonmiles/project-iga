@@ -192,7 +192,6 @@ def uploaded_file(filename):
 
 # Error Handling
 # --------------
-"""
 @app.errorhandler(HTTPException)
 def handle_exception(e):
     \"\"\"Return JSON instead of HTML for HTTP errors.\"\"\"
@@ -226,7 +225,7 @@ def handle_exception(e):
 
     # now you're handling non-HTTP exceptions only
     return render_template("500_generic.html", e=e), 500
-"""
+
 
 # route that allows users to view their results
 @app.route('/results', methods=['GET', 'POST'])
