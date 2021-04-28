@@ -6,8 +6,20 @@ import pickle
 import preprocessing
 
 
-# Returns pandas dataframe after getting rid of the essays we aren't grading against, also gets rid of unused columns
 def get_dataframe(data_loc):
+    """
+    Returns pandas DataFrame for given file
+
+    Parameters
+    ----------
+    data_loc : str
+        Filepath of data file
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        The corresponding DataFrame
+    """
     try:
         df = pd.read_csv(data_loc, sep='\t', encoding='ISO-8859-1')
     except FileNotFoundError:
@@ -22,50 +34,47 @@ def get_dataframe(data_loc):
     return df
 
 
-# Preprocesses each essays into a word list (where each element of
-# the list is a word). This allows the essay to be sequentially
-# processed by the model word-by-word.
 def get_clean_essays(essays):
+    """
+    Preprocesses each essay into a list of words. This allows the essay to be 
+    sequentially processed by the model word-by-word.
+
+    Parameters
+    ----------
+    essays : list of str
+        The list of essays we want to convert
+
+    Returns
+    -------
+    clean_essays : list of list of str
+        A list of essays, where each essay is a list of words
+    """
     clean_essays = []
     for essay_v in essays:
         clean_essays.append(preprocessing.essay_to_wordlist(essay_v, remove_stopwords=True))
     return clean_essays
 
 
-# Grabs every sentence from each essay in 'essays' and jams
-# them into one array
-def get_sentences(essays):
-    sentences = []
-    for essay in essays:
-        sentences += preprocessing.essay_to_sentences(essay, remove_stopwords=True)
-    return sentences
-
-
-# Turns 'data_vecs' into a np array and then reshapes it into the
-# proper shape for LSTM's input
-def array_and_reshape(data_vecs):
-    data_vecs = np.array(data_vecs)
-    data_vecs = np.reshape(data_vecs, (data_vecs.shape[0], 1, data_vecs.shape[1]))
-    return data_vecs
-
-
-# A tokenizer is needed for evaluating an essay. Each essay is split
-# into its constituent tokens, which might represent organizations, dates,
-# numbers, and so on.
-# 
-# TODO: Remove? Possibly obsolete.
-def load_tokenizer():
-    with open('tokenizer/tokenizer.pickle', 'rb') as handle:
-        tokenizer = pickle.load(handle)
-    return tokenizer
-
-
-# This preprocessing step is for the evaluation function. The procedure first
-# tokenizes the essay. Then, it transforms the tokens into a sequence of integers.
-# Finally, it pads the sequence with additional characters so that each essay will
-# have the same sequence length. 
-# Credit: yetianpro on GitHub
 def preprocess(text_raw, tk):
+    """
+    This preprocessing step is for the evaluation function. The procedure first
+    tokenizes the essay. Then, it transforms the tokens into a sequence of integers.
+    Finally, it pads the sequence with additional characters so that each essay will
+    have the same sequence length.
+    Credit: yetianpro on GitHub
+
+    Parameters
+    ----------
+    text_raw : str
+        The raw essay
+    tk : Tokenizer
+        A tokenizer from the Keras preprocessing package
+
+    Returns
+    -------
+    text_array : list of int
+        A list of integers representing the words in the essay
+    """
     text_tokenized = word_tokenize(text_raw)
     text_encoded = tk.texts_to_sequences([text_tokenized])
     text_array = pad_sequences(text_encoded, maxlen=200, padding='post')

@@ -3,7 +3,8 @@ import pandas
 
 class KeyWords:
     """
-    This class is used exclusively to search the text with a list of keywords and record their occurrence.
+    The KeyWords class is used to search a given essay with a list of keywords and record their occurrences.
+    It can also be used to add/remove words from a keyword list.
 
     Parameters
     ----------
@@ -26,7 +27,7 @@ class KeyWords:
 
     def occurrence(self, text):
         """
-        Use to count the occurrence of every keyword in a given text.
+        Counts the occurrences of each keyword in a given essay
 
         Parameters
         ----------
@@ -66,8 +67,7 @@ class KeyWords:
 
     def add_keyword(self, word):
         """
-        Use to add a keyword to the current keyword list, as well as add it to the given .csv file assuming one was
-        given.
+        Adds given word to the current keyword list and to the corresponding .csv file
 
         Parameters
         ----------
@@ -94,8 +94,8 @@ class KeyWords:
 
     def remove_keyword(self, word):
         """
-        Use to remove a keyword to the current keyword list, as well as remove it from the given .csv file assuming
-        one was given. If the file doesn't exist in the keyword list, then simply return True.
+        Removes given word from the current keyword list and the corresponding .csv file.
+        If the word doesn't exist in the keyword list, then simply return True.
 
         Parameters
         ----------
@@ -105,7 +105,7 @@ class KeyWords:
         Returns
         -------
         bool
-            True if added successfully, False otherwise.
+            True if removed successfully, False otherwise.
         """
         keys = self.__keys
         if word.lower() not in keys:

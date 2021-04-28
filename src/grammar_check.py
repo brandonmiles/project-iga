@@ -6,7 +6,7 @@ tool = language_tool_python.LanguageTool('en-US')
 
 def number_of_errors(text):
     """
-    Used to both correct the given text of errors as well as return a list of all grammar and spelling errors. Note that
+    Corrects the given essay's errors and returns a list of all grammar and spelling errors. Note that
     the text is run through the grammar and spelling check twice for greater accuracy.
 
     Parameters

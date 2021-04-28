@@ -8,6 +8,7 @@ weights = {'grammar': 1, 'allowed_mistakes': 3, 'key_max': 2, 'key_min': 0, 'wor
            'page_min': None, 'page_max': None, 'format': 5, 'reference': 5}
 
 
+# Presently this is just a test function for the Grade class. However, it can be adapted for other purposes.
 def main():
     g = Grade(rubric, weights, './')
 

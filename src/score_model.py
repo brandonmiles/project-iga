@@ -29,8 +29,8 @@ class Model(ABC):
     def load_data(self, filepath=None):
         """
         The load_data function needs to be replaced by any inheriting classes. This function should should create an 'x'
-         pandas Dataframe that contains an 'essays' column as well as a y pandas Dataframe that contains the same
-         indexes as x and a 'normal' column that represents the normalized scores of the x essays.
+        pandas Dataframe that contains an 'essays' column as well as a y pandas Dataframe that contains the same
+        indexes as x and a 'normal' column that represents the normalized scores of the x essays.
 
         Parameters
         ----------
@@ -50,8 +50,8 @@ class Model(ABC):
 
     def train_and_test(self, x, y, n_splits, epochs):
         """
-        Actually trains the model so it can be used to evaluate essays. The models filepath will be used to save the
-        weights of the model at the end of training. Progress will be outputted with relevant information about the
+        Trains the model so it can be used to evaluate essays. The model's filepath will be used to save the
+        weights of the model at the end of training. Progress will be output with relevant information about the
         accuracy of the model as it is being trained.
 
         Parameters
@@ -62,9 +62,9 @@ class Model(ABC):
             Should be a dataframe with the same indexes as x and a 'normal' column whose type is float32, being between
             0.0 and 1.0.
         n_splits : int
-            How many Kfolds the model will undergo.
+            How many folds the model will train for.
         epochs : int
-            How many epochs the model will go through for every Kfold
+            How many epochs the model will go through for each fold.
 
         Returns
         -------
@@ -104,6 +104,7 @@ class Model(ABC):
             x_train_seq = self._tokenizer.texts_to_sequences(train_essays)
             x_test_seq = self._tokenizer.texts_to_sequences(test_essays)
 
+            # Pad essays to be maxlen words long. This creates uniformity in the training data.
             x_train_seq = pad_sequences(x_train_seq, maxlen=200)
             x_test_seq = pad_sequences(x_test_seq, maxlen=200)
 
@@ -142,7 +143,7 @@ class Model(ABC):
 
     def evaluate(self, essay):
         """
-        Used to give a score between 0.0 and 1.0 to the essay. If the model's weights can't be found, the model will
+        Returns a score between 0.0 and 1.0 for the essay. If the model's weights can't be found, the model will
         automatically be built from the given data.
 
         Parameters
@@ -193,7 +194,8 @@ class Model(ABC):
 class ScoreModel(Model):
     """
     The ScoreModel class defines the parameters of the score model and provides functions for training
-    essays on this model. The model derives its 
+    essays on the score model. Evaluating an essay on this model will give a score (0 to 1) based on existing
+    scores given to "similar" essays in the training data.
 
     Parameters
     ----------
@@ -228,7 +230,7 @@ class ScoreModel(Model):
 
     def load_data(self, filepath=None):
         """
-        Use to load the data into the score model, followed by training the new model from the data.
+        Loads the data into the score model, and then initiates model training
 
         Parameters
         ----------
@@ -273,7 +275,10 @@ class ScoreModel(Model):
 
 class IdeaModel(Model):
     """
-    This model should be used to give a score that represents the quality of ideas in the essay.
+    The IdeaModel class defines the parameters of the idea model and provides functions for training
+    essays on the idea model. Evaluating an essay on the idea model produces a number (either 0, 0.5,
+    or 1) indicating the "quality of ideas" contained in the given essay. 0 indicates negative quality,
+    0.5 indicates neutral quality, and 1 indicates positive quality.
 
     Parameters
     ----------
@@ -306,7 +311,7 @@ class IdeaModel(Model):
 
     def load_data(self, filepath=None):
         """
-        Use to load the data into the feedback model, followed by training the new model from the data.
+        Loads the data into the score model, and then initiates model training
 
         Parameters
         ----------
@@ -344,7 +349,10 @@ class IdeaModel(Model):
 
 class OrganizationModel(Model):
     """
-    This model should be used to give a score that represents the quality of the organization in the essay.
+    The OrganizationModel class defines the parameters of the organization model and provides functions for training
+    essays on the organization model. Evaluating an essay on the organization model produces a number (either 0, 0.5,
+    or 1) indicating the "organization quality" of the given essay. 0 indicates negative quality, 0.5 indicates 
+    neutral quality, and 1 indicates positive quality.
 
     Parameters
     ----------
@@ -377,7 +385,7 @@ class OrganizationModel(Model):
 
     def load_data(self, filepath=None):
         """
-        Use to load the data into the feedback model, followed by training the new model from the data.
+        Loads the data into the score model, and then initiates model training
 
         Parameters
         ----------
@@ -415,7 +423,10 @@ class OrganizationModel(Model):
 
 class StyleModel(Model):
     """
-    This model should be used to give a score that represents the quality of the style in the essay.
+    The StyleModel class defines the parameters of the style model and provides functions for training
+    essays on the style model. Evaluating an essay on the style model produces a number (either 0, 0.5,
+    or 1) indicating the "style quality" of the given essay. 0 indicates negative quality, 0.5 indicates 
+    neutral quality, and 1 indicates positive quality.
 
     Parameters
     ----------
@@ -448,7 +459,7 @@ class StyleModel(Model):
 
     def load_data(self, filepath=None):
         """
-        Use to load the data into the feedback model, followed by training the new model from the data.
+        Loads the data into the score model, and then initiates model training
 
         Parameters
         ----------
@@ -487,9 +498,9 @@ class StyleModel(Model):
 # If you want to run this program specifically, you can put the appropriate
 # code into this main() function.
 def main():
-    model = ScoreModel('../model_weights/final_lstm.h5', '../../data/training_set.tsv',
-                       '../../data/glove6B/glove.6B.300d.txt')
-    model.load_data('../../data/training_set.tsv')
+    model = ScoreModel('./model_weights/final_lstm.h5', '../data/training_set.tsv',
+                       '../data/glove6B/glove.6B.300d.txt')
+    model.load_data('../data/training_set.tsv')
 
 
 # This stops all the code from running when Sphinx imports the module.

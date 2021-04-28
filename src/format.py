@@ -8,7 +8,7 @@ WORD_PROPERTIES = '{http://schemas.openxmlformats.org/officeDocument/2006/extend
 
 def get_style():
     """
-    Use to get the dictionary structure that defines the style.
+    Returns a dictionary containing style information
 
     Returns
     -------
@@ -35,7 +35,7 @@ def get_style():
 
 def get_format_file(filepath):
     """
-    Use to retrieve a style from a file.
+    Returns style for given JSON file
 
     Parameters
     ----------
@@ -70,7 +70,7 @@ def get_format_file(filepath):
 
 def update_format_file(filepath, style):
     """
-    Use to update a .json file's style
+    Updates given JSON file's style
 
     Parameters
     ----------
@@ -101,7 +101,7 @@ def update_format_file(filepath, style):
 
 class Format:
     """
-    This class will handle all of the doc and docx xml decompiling to generate a dictionary of the document's currently
+    The Format class handles all of the .doc and .docx XML decompiling to generate a dictionary of the document's currently
     used fonts, sizes, and other formatting.
 
     Parameters
@@ -177,8 +177,8 @@ class Format:
 
     def get_font_table(self):
         """
-        Use to get the font table provided by the xml document, but know that by default, it will always include Times
-        New Roman, Calibri and Calibri Light in the table.
+        Returns the font table provided by the XML document. By default, the table will always include Times
+        New Roman, Calibri and Calibri Light.
 
         Returns
         -------
@@ -194,7 +194,7 @@ class Format:
 
     def get_font(self):
         """
-        Use to get all of the fonts used as well as their sizes.
+        Returns all fonts used in the document, as well as their respective sizes
 
         Returns
         -------
@@ -234,7 +234,7 @@ class Format:
 
     def get_spacing(self):
         """
-        Use to get the used line and paragraph spacings used in the document.
+        Returns line and paragraph spacings used in the document
 
         Returns
         -------
@@ -271,8 +271,8 @@ class Format:
 
     def get_indentation(self):
         """
-        Use to get a score of the documents indention, being between 0.0 and 1.0, where 0.0 no indention and 1.0 is all
-        indention.
+        Returns score between 0 and 1 based on the document's indentation, where 0 indicates lack of indentation
+        and 1 indicates an exclusive use of indentation
 
         Returns
         -------
@@ -304,8 +304,8 @@ class Format:
 
     def get_margin(self):
         """
-        Use to get a margins score, where 0.0 is consistent margins, with 1.0 and above being increasingly inconsistent
-        margins.
+        Returns a score between 0 and 2 based on the margins, where 0 indicates consistent margins and
+        higher scores increasingly indicate inconsistent margins
 
         Returns
         -------

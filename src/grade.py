@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
 def get_style():
     """
-    Use to get the dictionary structure that defines the style.
+    Returns dictionary defining the essay's style
 
     Returns
     -------
@@ -32,7 +32,7 @@ def get_style():
 
 def get_rubric():
     """
-    Use to get the dictionary structure that defines the rubric.
+    Returns dictionary defining the essay's rubric
 
     Returns
     -------
@@ -46,23 +46,23 @@ def get_rubric():
 
 def get_weights():
     """
-    Use to get the dictionary structure that defines the weights.
+    Returns dictionary containing weights for each preference
 
     Returns
     -------
     dict
-        The dictionary contains the following keys:
-        'grammar' allows you to specify how many points are lost per grammar or spelling mistake.
-        'allowed_mistakes' lets you specify how many grammar or spelling mistakes are allowed before points are lost.
-        'key_max' is the expected number of different keywords the essay should have.
-        'key_min' is how many keywords the essay need to have before they simply get zero points for the section.
-        'word_min' is a measure of how many words are expected minimum or else they lose full points for the section.
-        'word_max' is the maximum number of words an essay can have before losing half the points for the section.
-        'page_min' same as word_min except if you want a different standard to judge word doc files.
-        'page_max' as as word_max with the same exception as page_min.
-        'format' represents how many points are lost for every formatting error, word doc only.
-        'reference' is the number of points lost for every missing reference in the essay.
-        Please Note that allowed_mistakes, word_min, word_max, page_min, and page max can all be None if you don't wish
+        The dictionary contains the following keys:\n
+        'grammar' allows you to specify how many points are lost per grammar or spelling mistake.\n
+        'allowed_mistakes' lets you specify how many grammar or spelling mistakes are allowed before points are lost.\n
+        'key_max' is the expected number of different keywords the essay should have.\n
+        'key_min' is how many keywords the essay need to have before they simply get zero points for the section.\n
+        'word_min' is a measure of how many words are expected minimum or else they lose full points for the section.\n
+        'word_max' is the maximum number of words an essay can have before losing half the points for the section.\n
+        'page_min' same as word_min except if you want a different standard to judge word doc files.\n
+        'page_max' as as word_max with the same exception as page_min.\n
+        'format' represents how many points are lost for every formatting error; word doc only.\n
+        'reference' is the number of points lost for every missing reference in the essay.\n
+        Please note that allowed_mistakes, word_min, word_max, page_min, and page max can all be None if you don't wish
         to provide a value, but every other key must have an associated non-None integer value.
     """
     return {'grammar': 0, 'allowed_mistakes': 0, 'key_max': 0, 'key_min': 0, 'word_min': None,
@@ -71,24 +71,24 @@ def get_weights():
 
 def get_filepath():
     """
-    Use to get the dictionary structure that defines the weights.
+    Returns dictionary containing filepaths for data relevant to grading
 
     Returns
     -------
     dict
-        The dictionary contains the following keys:
-        'model' is a filepath to the score model's saved weights.
-        'model_data' is a filepath to the score model's training data.
-        'idea' is a filepath to the idea model's saved weights.
-        'idea_data' is a filepath to the idea model's training data.
-        'organization' is a filepath to the organization model's saved weights.
-        'organization_data' is a filepath to the organization model's training data.
-        'style' is a filepath to the style model's saved weights.
-        'style_data' is a filepath to the style model's training data.
-        'embedding' is a filepath to glove.6B.300d.txt.
-        'style_json' is a filepath to a .json file where a style for format.py is stored.
+        The dictionary contains the following keys:\n
+        'model' is a filepath to the score model's saved weights.\n
+        'model_data' is a filepath to the score model's training data.\n
+        'idea' is a filepath to the idea model's saved weights.\n
+        'idea_data' is a filepath to the idea model's training data.\n
+        'organization' is a filepath to the organization model's saved weights.\n
+        'organization_data' is a filepath to the organization model's training data.\n
+        'style' is a filepath to the style model's saved weights.\n
+        'style_data' is a filepath to the style model's training data.\n
+        'embedding' is a filepath to glove.6B.300d.txt.\n
+        'style_json' is a filepath to a .json file where a style for format.py is stored.\n
         'dictionary' is a filepath to a .csv file containing the keywords to be used when grading papers. Can be set to
-         None if you don't want to start with any keywords.
+        None if you don't want to start with any keywords.
     """
     return {'model': 'model_weights/final_lstm.h5', 'model_data': '../data/training_set.tsv',
             'idea': 'model_weights/final_idea_lstm.h5', 'idea_data': '../data/comment_set.tsv',
@@ -100,7 +100,8 @@ def get_filepath():
 
 class Grade:
     """
-    This class is used to actually grade an essay based on the given rubric and weights.
+    The Grade class contains definitions and functions used to grade an essay based on the given rubric and weights.
+    The grade produced here is the final grade sent to the user.
 
     Parameters
     ----------
@@ -178,7 +179,7 @@ class Grade:
 
     def get_grade(self, text):
         """
-        This will grade every section in the given rubric
+        Returns a grade for the given essay in line with the rubric
 
         Parameters
         ----------
@@ -192,14 +193,14 @@ class Grade:
             A tuple containing debug(string), points(integer), and feedback(string).
             Debug contains information from every section that was graded.
             Grade is on a scale of 0 - 100 that represents the final given grade. This value starts at 100 and has
-             points taken off by each section until there is at minimum 0 left.
+            points taken off by each section until there is at minimum 0 left.
             Feedback contains all of the feedback information from every section that was graded.
 
         Raises
         ------
         FileNotFoundError
-            The given filepath was either wrong, is missing, or is the wrong type.
-        """
+        The given filepath was either wrong, is missing, or is the wrong type.
+		"""
         grade, page, word = 100, None, None
         debug, output, t = "", "", ""
 
@@ -263,7 +264,7 @@ class Grade:
 
     def grade_grammar(self, text):
         """
-        Use to grade only the grammar and spelling of a given text.
+        Returns a grade based on grammar and spelling in the given essay
 
         Parameters
         ----------
@@ -276,9 +277,9 @@ class Grade:
             A tuple containing points(integer), corrected_text(string), debug(string), and feedback(string).
             Points is the number of points lost in this section, being between 0 and rubric['grammar'].
             Corrected_text is the given after being corrected for grammar and spelling mistakes. It is recommended that
-             this is used in place of the original text when grading the other sections.
+            this is used in place of the original text when grading the other sections.
             Debug will contain the number of grammar and spelling mistakes in the text, followed by a list of pairs,
-             where each pair contains the mistake and the suggested correction.
+            where each pair contains the mistake and the suggested correction.
             Feedback will contain a pre-written string based on the number of points being taken off.
             See feedback.py for more info.
         """
@@ -301,7 +302,7 @@ class Grade:
 
     def grade_key(self, text):
         """
-        Use to grade only the keyword section.
+        Returns a grade based on the use (or disuse) of keywords in the given essay
 
         Parameters
         ----------
@@ -315,7 +316,7 @@ class Grade:
             A tuple containing points(integer), debug(string), and feedback(string).
             Points is the number of points lost in this section, being between 0 and rubric['key'].
             Debug contains a list of pairs, where each pair is the keyword and the number of occurrences of said keyword
-             in the given text.
+            in the given text.
             Feedback will contain a pre-written string based on the number of points being taken off.
             See feedback.py for more info.
         """
@@ -337,7 +338,7 @@ class Grade:
 
     def grade_length(self, text, page=None):
         """
-        Use to grade only the length section.
+        Returns a grade based on the length of the given essay
 
         Parameters
         ----------
@@ -378,7 +379,7 @@ class Grade:
 
     def grade_model(self, text):
         """
-        Use to grade only the model section.
+        Returns a grade based on the outputs of the score and feedback models when given the input essay
 
         Parameters
         ----------
@@ -416,7 +417,7 @@ class Grade:
 
     def grade_format(self, word):
         """
-        Use to grade only the format section.
+        Returns a grade based on the format of the given essay
 
         Parameters
         ----------
@@ -526,7 +527,7 @@ class Grade:
 
     def grade_reference(self, text):
         """
-        Use to grade only the reference section.
+        Returns a grade based on the use (or disuse) of references in the given essay
 
         Parameters
         ----------
@@ -556,7 +557,7 @@ class Grade:
 
     def retrain_model(self, filepath=None, name="score"):
         """
-        Call this if you want to retrain a model.
+        Retrains the score and feedback models
 
         Parameters
         ----------
@@ -583,7 +584,7 @@ class Grade:
 
     def update_style(self, style, filepath=None):
         """
-        Change the currently used style as well as potentially store a style for later use.
+        Updates current style and stores (possibly different) style at given filepath (if one is given)
 
         Parameters
         ----------
@@ -607,7 +608,7 @@ class Grade:
 
     def get_style(self, filepath=None):
         """
-        Get the currently used style or load a style from a filepath if given.
+        Returns current style and updates it if style file is given
 
         Parameters
         ----------
@@ -634,7 +635,7 @@ class Grade:
 
     def update_rubric(self, rubric):
         """
-        Use to replace the currently used rubric.
+        Replaces the current rubric
 
         Parameters
         ----------
@@ -662,7 +663,7 @@ class Grade:
 
     def update_weights(self, weights):
         """
-        Use to replace the currently used weights.
+        Replaces the current weights
 
         Parameters
         ----------
@@ -690,7 +691,7 @@ class Grade:
 
     def add_keyword(self, word):
         """
-        Adds the given word to the keyword list and to the .csv if one was provided beforehand.
+        Adds given word to the keyword list and corresponding .csv file (if one was provided beforehand)
 
         Parameters
         ----------
@@ -706,7 +707,7 @@ class Grade:
 
     def remove_keyword(self, word):
         """
-        Use to remove a word from the keyword list and .csv file if one exists.
+        Removes given word from the keyword list and corresponding .csv file (if one exists)
 
         Parameters
         ----------

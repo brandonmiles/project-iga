@@ -1,4 +1,4 @@
-# Credit: Soumyadip Sarkar (from kaggle.com)
+# Partial credit: Soumyadip Sarkar (from kaggle.com)
 import numpy as np
 import nltk
 import re
@@ -6,8 +6,23 @@ from nltk.corpus import stopwords
 from gensim.models import Word2Vec
 
 
-# Convert essay into a list of words
 def essay_to_wordlist(essay_v, remove_stopwords):
+    """
+    Converts given essay into a list of words, with some "stopwords"
+    being removed if required
+
+    Parameters
+    ----------
+    essay_v : str
+        An essay to be converted to a list of words
+    remove_stopwords : bool
+        If True, remove stopwords from the essay
+
+    Returns
+    -------
+    words : list of str
+        List of words that make up the essay
+    """
     essay_v = re.sub("[^a-zA-Z]", " ", essay_v)
     words = essay_v.lower().split()
     if remove_stopwords:
@@ -16,8 +31,23 @@ def essay_to_wordlist(essay_v, remove_stopwords):
     return words
 
 
-# Convert essay into a list of sentences
 def essay_to_sentences(essay_v, remove_stopwords):
+    """
+    Converts given essay into a list of sentences, with some "stopwords"
+    being removed if required
+
+    Parameters
+    ----------
+    essay_v : str
+        An essay to be converted to a list of sentences
+    remove_stopwords : bool
+        If True, remove stopwords from the essay
+
+    Returns
+    -------
+    sentences : list of str
+        List of sentences that make up the essay
+    """
     tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
     raw_sentences = tokenizer.tokenize(essay_v.strip())
     sentences = []

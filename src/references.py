@@ -5,7 +5,8 @@ from nltk import word_tokenize
 
 def extract_citation(text):
     """
-    Used to return the total number of references missing in the references section of the provided text.
+    Returns the total number of references missing in the references section of the given essay
+    
     Parameters
     ----------
     text : str
