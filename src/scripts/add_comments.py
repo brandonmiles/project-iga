@@ -1,5 +1,14 @@
 import pandas
 
+# If you want to run this program specifically, you can put the appropriate
+# code into this main() function.
+def main():
+    return
+
+# This stops all the code from running when Sphinx imports the module.
+if __name__ == '__main__':
+    main()
+
 # Change this to match your file path
 FILE_NAME = '../data/feedback/gautam.csv'
 

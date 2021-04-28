@@ -3,3 +3,4 @@ model_weights/
 ../data/glove6B/
 ../interface/__pycache__/
 ../interface/formData/__pycache__/
+../scripts/__pycache__
