@@ -321,14 +321,14 @@ PROMPT_7 = "Write about patience. Being patient means that you are understanding
 PROMPT_8 = "We all understand the benefits of laughter. For example, someone once said, “Laughter is the shortest " \
            "distance between two people.” Many other people believe that laughter is an important part of any " \
            "relationship. Tell a true story in which laughter was one element or part."
-           
-stuff = pandas.read_csv(FILE_NAME, sep=',', encoding='ISO-8859-1')
-stuff = stuff.copy()
-
-if 'comments' not in stuff.keys():
-    stuff['comments'] = None
 
 def main():
+    stuff = pandas.read_csv(FILE_NAME, sep=',', encoding='ISO-8859-1')
+    stuff = stuff.copy()
+
+    if 'comments' not in stuff.keys():
+        stuff['comments'] = None
+        
     while True:
         num = input("\nYou can enter an essay id, [0] to save & exit, [TD] for essays to do, [P-(essay_set)] for each essay"
                     " prompt, or [T-(essay_set)] if the essay prompt has an associated text. If you use the [commit] "
