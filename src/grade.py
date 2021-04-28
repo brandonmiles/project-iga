@@ -5,6 +5,7 @@ import format
 import references
 from score_model import ScoreModel, IdeaModel, OrganizationModel, StyleModel
 from pdfminer.high_level import extract_text
+from pdfminer.utils import open_filename # Not used here, but might be needed for Sphinx build
 
 
 # If you want to run this program specifically, you can put the appropriate
