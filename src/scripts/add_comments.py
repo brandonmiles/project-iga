@@ -1,18 +1,9 @@
 import pandas
 
-# If you want to run this program specifically, you can put the appropriate
-# code into this main() function.
-def main():
-    return
-
-# This stops all the code from running when Sphinx imports the module.
-if __name__ == '__main__':
-    main()
-
 # Change this to match your file path
-FILE_NAME = '../data/feedback/gautam.csv'
+FILE_NAME = '../../data/feedback/gautam.csv'
 
-FILE_COMMIT = '../data/comment_set.tsv'
+FILE_COMMIT = '../../data/comment_set.tsv'
 
 PROMPT_1 = "Write a letter to your local newspaper in which you state your opinion on the effects computers have on " \
            "people. Persuade the readers to agree with you."
@@ -337,114 +328,119 @@ stuff = stuff.copy()
 if 'comments' not in stuff.keys():
     stuff['comments'] = None
 
-while True:
-    num = input("\nYou can enter an essay id, [0] to save & exit, [TD] for essays to do, [P-(essay_set)] for each essay"
-                " prompt, or [T-(essay_set)] if the essay prompt has an associated text. If you use the [commit] "
-                "command, it will copy your work to the aggregate comment file, comment_set.csv : ")
-    num = num.lower()
-    if num == '0':
-        break
-    if num == 'td':
-        print(stuff.loc[stuff['comments'].isnull()]['essay_id'].values)
-        continue
-    if num == 'commit':
-        print("Copying data to ", FILE_COMMIT)
-        dataset = pandas.read_csv(FILE_COMMIT, sep='\t', encoding='ISO-8859-1')
-        dataset = dataset.copy()
+def main():
+    while True:
+        num = input("\nYou can enter an essay id, [0] to save & exit, [TD] for essays to do, [P-(essay_set)] for each essay"
+                    " prompt, or [T-(essay_set)] if the essay prompt has an associated text. If you use the [commit] "
+                    "command, it will copy your work to the aggregate comment file, comment_set.csv : ")
+        num = num.lower()
+        if num == '0':
+            break
+        if num == 'td':
+            print(stuff.loc[stuff['comments'].isnull()]['essay_id'].values)
+            continue
+        if num == 'commit':
+            print("Copying data to ", FILE_COMMIT)
+            dataset = pandas.read_csv(FILE_COMMIT, sep='\t', encoding='ISO-8859-1')
+            dataset = dataset.copy()
 
-        for i in range(len(stuff)):
-            j = stuff.loc[i]
-            if j['comments'] is None:
-                continue
-            if dataset.loc[dataset['essay_id'] == j['essay_id']].empty:
-                dataset = dataset.append(j)
-            else:
-                dataset.loc[dataset['essay_id'] == j['essay_id'], 'comments'] = j['comments']
-        dataset.to_csv(FILE_COMMIT, sep='\t', index=False, encoding='ISO-8859-1')
-        break
-    if num == 'correct':
-        for i in range(len(stuff)):
-            text = stuff.loc[i]['comments'].split(",")
-            if text[0] == 'ID1':
-                text[0] = 'ID3'
-            else:
-                if text[0] == 'ID3':
-                    text[0] = 'ID1'
-            if text[1] == 'ORG1':
-                text[1] = 'ORG3'
-            else:
-                if text[1] == 'ORG3':
-                    text[1] = 'ORG1'
-            if text[2] == 'STY1':
-                text[2] = 'STY3'
-            else:
-                if text[2] == 'STY3':
-                    text[2] = 'STY1'
-            done = text[0] + "," + text[1] + "," + text[2]
+            for i in range(len(stuff)):
+                j = stuff.loc[i]
+                if j['comments'] is None:
+                    continue
+                if dataset.loc[dataset['essay_id'] == j['essay_id']].empty:
+                    dataset = dataset.append(j)
+                else:
+                    dataset.loc[dataset['essay_id'] == j['essay_id'], 'comments'] = j['comments']
+            dataset.to_csv(FILE_COMMIT, sep='\t', index=False, encoding='ISO-8859-1')
+            break
+        if num == 'correct':
+            for i in range(len(stuff)):
+                text = stuff.loc[i]['comments'].split(",")
+                if text[0] == 'ID1':
+                    text[0] = 'ID3'
+                else:
+                    if text[0] == 'ID3':
+                        text[0] = 'ID1'
+                if text[1] == 'ORG1':
+                    text[1] = 'ORG3'
+                else:
+                    if text[1] == 'ORG3':
+                        text[1] = 'ORG1'
+                if text[2] == 'STY1':
+                    text[2] = 'STY3'
+                else:
+                    if text[2] == 'STY3':
+                        text[2] = 'STY1'
+                done = text[0] + "," + text[1] + "," + text[2]
 
-            stuff.loc[i, 'comments'] = done
-        stuff.to_csv(FILE_NAME, sep=',', index=False, encoding='ISO-8859-1')
+                stuff.loc[i, 'comments'] = done
+            stuff.to_csv(FILE_NAME, sep=',', index=False, encoding='ISO-8859-1')
 
-    if len(num) == 3 and num[0:2] == 'p-' and 0 < int(num[2]) < 9:
-        i = int(num[2])
-        if i == 1:
-            print(PROMPT_1)
-        if i == 2:
-            print(PROMPT_2)
-        if i == 3:
-            print(PROMPT_3)
-        if i == 4:
-            print(PROMPT_4)
-        if i == 5:
-            print(PROMPT_5)
-        if i == 6:
-            print(PROMPT_6)
-        if i == 7:
-            print(PROMPT_7)
-        if i == 8:
-            print(PROMPT_8)
-        continue
-    if len(num) == 3 and num[0:2] == 't-' and 2 < int(num[2]) < 7:
-        i = int(num[2])
-        if i == 3:
-            print(PROMPT_3_TEXT)
-        if i == 4:
-            print(PROMPT_4_TEXT)
-        if i == 5:
-            print(PROMPT_5_TEXT)
-        if i == 6:
-            print(PROMPT_6_TEXT)
-        continue
+        if len(num) == 3 and num[0:2] == 'p-' and 0 < int(num[2]) < 9:
+            i = int(num[2])
+            if i == 1:
+                print(PROMPT_1)
+            if i == 2:
+                print(PROMPT_2)
+            if i == 3:
+                print(PROMPT_3)
+            if i == 4:
+                print(PROMPT_4)
+            if i == 5:
+                print(PROMPT_5)
+            if i == 6:
+                print(PROMPT_6)
+            if i == 7:
+                print(PROMPT_7)
+            if i == 8:
+                print(PROMPT_8)
+            continue
+        if len(num) == 3 and num[0:2] == 't-' and 2 < int(num[2]) < 7:
+            i = int(num[2])
+            if i == 3:
+                print(PROMPT_3_TEXT)
+            if i == 4:
+                print(PROMPT_4_TEXT)
+            if i == 5:
+                print(PROMPT_5_TEXT)
+            if i == 6:
+                print(PROMPT_6_TEXT)
+            continue
 
-    if not num.isdigit():
-        continue
+        if not num.isdigit():
+            continue
 
-    view = stuff.loc[stuff['essay_id'] == int(num)]
+        view = stuff.loc[stuff['essay_id'] == int(num)]
 
-    if not view['essay'].values.size > 0:
-        print("Enter a valid essay number")
-        continue
+        if not view['essay'].values.size > 0:
+            print("Enter a valid essay number")
+            continue
 
-    print("Essay Set: ", view['essay_set'].values)
-    print(view['essay'].values)
+        print("Essay Set: ", view['essay_set'].values)
+        print(view['essay'].values)
 
-    a = input("Enter the idea score(1-3): ")
-    if a == '0' or not a.isdigit():
-        break
-    if not 0 < int(a) < 4:
-        continue
+        a = input("Enter the idea score(1-3): ")
+        if a == '0' or not a.isdigit():
+            break
+        if not 0 < int(a) < 4:
+            continue
 
-    b = input("Enter the organization score(1-3): ")
-    if b == '0' or not b.isdigit():
-        break
-    if not 0 < int(b) < 4:
-        continue
+        b = input("Enter the organization score(1-3): ")
+        if b == '0' or not b.isdigit():
+            break
+        if not 0 < int(b) < 4:
+            continue
 
-    c = input("Enter the style score(1-3): ")
-    if c == '0' or not c.isdigit():
-        break
-    if not 0 < int(c) < 4:
-        continue
-    stuff.loc[view.index.values[0], 'comments'] = "ID" + a + ",ORG" + b + ",STY" + c
+        c = input("Enter the style score(1-3): ")
+        if c == '0' or not c.isdigit():
+            break
+        if not 0 < int(c) < 4:
+            continue
+        stuff.loc[view.index.values[0], 'comments'] = "ID" + a + ",ORG" + b + ",STY" + c
 
-stuff.to_csv(FILE_NAME, sep=',', index=False, encoding='ISO-8859-1')
+    stuff.to_csv(FILE_NAME, sep=',', index=False, encoding='ISO-8859-1')
+
+# This stops all the code from running when Sphinx imports the module.
+if __name__ == '__main__':
+    main()
