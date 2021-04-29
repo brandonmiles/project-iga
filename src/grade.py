@@ -5,7 +5,7 @@ import format
 import references
 from score_model import ScoreModel, IdeaModel, OrganizationModel, StyleModel
 from pdfminer.high_level import extract_text
-from pdfminer.utils import open_filename # Not used here, but might be needed for Sphinx build
+from pdfminer.utils import open_filename  # Not used here, but might be needed for Sphinx build
 
 
 # If you want to run this program specifically, you can put the appropriate
@@ -91,12 +91,12 @@ def get_filepath():
         'dictionary' is a filepath to a .csv file containing the keywords to be used when grading papers. Can be set to
         None if you don't want to start with any keywords.
     """
-    return {'model': 'model_weights/final_lstm.h5', 'model_data': '../data/training_set.tsv',
-            'idea': 'model_weights/final_idea_lstm.h5', 'idea_data': '../data/comment_set.tsv',
-            'organization': 'model_weights/final_organization_lstm.h5', 'organization_data': '../data/comment_set.tsv',
-            'style': 'model_weights/final_style_lstm.h5', 'style_data': '../data/comment_set.tsv',
-            'embedding': '../data/glove6B/glove.6B.300d.txt', 'style_json': '../data/standard.json',
-            'dictionary': '../data/dictionary.csv'}
+    return {'model': 'model_weights/final_lstm.h5', 'model_data': 'training_set.tsv',
+            'idea': 'model_weights/final_idea_lstm.h5', 'idea_data': 'comment_set.tsv',
+            'organization': 'model_weights/final_organization_lstm.h5', 'organization_data': 'comment_set.tsv',
+            'style': 'model_weights/final_style_lstm.h5', 'style_data': 'comment_set.tsv',
+            'embedding': 'glove6B/glove.6B.300d.txt', 'style_json': 'standard.json',
+            'dictionary': 'dictionary.csv'}
 
 
 class Grade:
@@ -114,7 +114,7 @@ class Grade:
         weights should be a dictionary with the same keys as the grade.get_weights(). weights contains various alterable
         values that effect how each section is graded.
     start : str
-        This is a relative filepath to the src folder location, where all other file paths are based off of.
+        This is a relative filepath to the data folder location, where all other file paths are based off of.
     filepath : dict
         filepath should be a dictionary with the same keys as grade.get_filepath(). All file paths needed for grade to
         run properly can be found here, and should be the relative filepath from src.
@@ -201,7 +201,8 @@ class Grade:
         ------
         FileNotFoundError
         The given filepath was either wrong, is missing, or is the wrong type.
-		"""
+        """
+
         grade, page, word = 100, None, None
         debug, output, t = "", "", ""
 

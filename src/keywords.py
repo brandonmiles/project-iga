@@ -33,6 +33,8 @@ class KeyWords:
                 raise TypeError("filepath must be a string that represents a filepath.")
             file = open(filepath, 'r')
             self.__keys = file.read().split(',')
+            while '' in self.__keys:
+                self.__keys.remove('')
             file.close()
 
     def occurrence(self, text):
@@ -49,18 +51,26 @@ class KeyWords:
         list
             This is a list of pairs, where each pair consists of the keyword followed by the number of occurrences of it
             in the text.
+
+        Raises
+        ------
+        TypeError
+            text should be a string
         """
         pair = []
 
-        for i in self.__keys:  # Look for the keywords
-            char_loc, number = 0, 0
+        if type(text) is not str:
+            raise TypeError("text should be a string")
 
-            while True:
-                char_loc = text.find(i, char_loc) + 1
-                if char_loc == 0:
-                    break
-                else:
-                    number += 1
+        text = text.lower()
+        text_list = text.split(' ')
+
+        for i in self.__keys:  # Look for the keywords
+            number = 0
+
+            while i in text_list:
+                number += 1
+                text_list.remove(i)
 
             pair.append((i, number))
 
@@ -87,18 +97,32 @@ class KeyWords:
         Returns
         -------
         bool
-            True if added successfully, False otherwise.
+            True if added successfully.
+
+        Raises
+        ------
+        PermissionError
+            Could not overwrite existing filepath
+        TypeError
+            word should be a single word string
         """
+        if type(word) is not str:
+            raise TypeError("word should be a single word string")
+
         keys = self.__keys
         if word.lower() in keys:
             return True
-
         keys.append(word.lower())
-        if self.filepath is not None:
-            try:
-                open(self.filepath, 'w').write(keys)
-            except PermissionError:
-                return False
+
+        key_str = ''
+        for i in keys:
+            key_str += i + ','
+        key_str = key_str.strip(',')
+
+        if self.__filepath is not None:
+            file = open(self.__filepath, 'w')
+            file.write(key_str)
+            file.close()
         self.__keys = keys
         return True
 
@@ -115,18 +139,33 @@ class KeyWords:
         Returns
         -------
         bool
-            True if removed successfully, False otherwise.
+            True if removed successfully.
+
+        Raises
+        ------
+        PermissionError
+            Could not write over the given filepath
+        TypeError
+            word should be a single word string
         """
+        if type(word) is not str:
+            raise TypeError("word should be a single word string")
+
         keys = self.__keys
         if word.lower() not in keys:
             return True
         while word.lower() in keys:
             keys.remove(word.lower())
 
-        if self.filepath is not None:
-            try:
-                open(self.filepath, 'w').write(keys)
-            except FileNotFoundError:
-                return False
+        key_str = ''
+        for i in keys:
+            key_str += i + ','
+        key_str = key_str.strip(',')
+
+        if self.__filepath is not None:
+            file = open(self.__filepath, 'w')
+            file.write(key_str)
+            file.close()
+
         self.__keys = keys
         return True

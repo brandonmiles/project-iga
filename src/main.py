@@ -10,7 +10,7 @@ weights = {'grammar': 1, 'allowed_mistakes': 3, 'key_max': 2, 'key_min': 0, 'wor
 
 # Presently this is just a test function for the Grade class. However, it can be adapted for other purposes.
 def main():
-    g = Grade(rubric, weights, './')
+    g = Grade(rubric, weights, '../data/')
 
     try:
         test_data = pandas.read_csv('../data/test_set.tsv', sep='\t', encoding='ISO-8859-1')
