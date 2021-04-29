@@ -1,6 +1,3 @@
-import pandas
-
-
 class KeyWords:
     """
     The KeyWords class is used to search a given essay with a list of keywords and record their occurrences.
@@ -31,8 +28,11 @@ class KeyWords:
         if filepath is not None:
             if type(filepath) is not str:
                 raise TypeError("filepath must be a string that represents a filepath.")
+
             file = open(filepath, 'r')
             self.__keys = file.read().split(',')
+
+            # '' is not a valid keyword, it appears when given an empty file typically
             while '' in self.__keys:
                 self.__keys.remove('')
             file.close()
@@ -62,12 +62,15 @@ class KeyWords:
         if type(text) is not str:
             raise TypeError("text should be a string")
 
+        # Turn string into a list of words
         text = text.lower()
         text_list = text.split(' ')
 
-        for i in self.__keys:  # Look for the keywords
+        # For every keyword...
+        for i in self.__keys:
             number = 0
 
+            # For every instance of the keyword, remove it and increment the counter
             while i in text_list:
                 number += 1
                 text_list.remove(i)
@@ -109,20 +112,25 @@ class KeyWords:
         if type(word) is not str:
             raise TypeError("word should be a single word string")
 
+        # Add the word to the list if it doesn't exist in the list already
         keys = self.__keys
         if word.lower() in keys:
             return True
         keys.append(word.lower())
 
+        # This converts a list of words into a string of words separated by commas
         key_str = ''
         for i in keys:
             key_str += i + ','
         key_str = key_str.strip(',')
 
+        # Attempt to write new keyword list to the filepath if it exists
         if self.__filepath is not None:
             file = open(self.__filepath, 'w')
             file.write(key_str)
             file.close()
+
+        # All changes successful, so make it official
         self.__keys = keys
         return True
 
@@ -151,21 +159,25 @@ class KeyWords:
         if type(word) is not str:
             raise TypeError("word should be a single word string")
 
+        # Remove every occurrence of word from the current keyword list
         keys = self.__keys
         if word.lower() not in keys:
             return True
         while word.lower() in keys:
             keys.remove(word.lower())
 
+        # This converts a list of words into a string of words separated by commas
         key_str = ''
         for i in keys:
             key_str += i + ','
         key_str = key_str.strip(',')
 
+        # Attempt to write new keyword list to the filepath if it exists
         if self.__filepath is not None:
             file = open(self.__filepath, 'w')
             file.write(key_str)
             file.close()
 
+        # All changes successful, so make it official
         self.__keys = keys
         return True

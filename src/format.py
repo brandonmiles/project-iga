@@ -49,23 +49,26 @@ def get_format_file(filepath):
 
     Raises
     ------
-    Exception
+    FileNotFoundException
         Raises an exception with a message about the missing file.
+    UnicodeDecodeError
+        Raised whenever the given file isn't in a readable format file.
+    JSONDecodeError
+        Raised when not given a JSON file.
+    KeyError
+        Raised whenever the JSON file is missing fields.
     """
-    try:
-        data = open(filepath, 'r')
+    with open(filepath) as data:
         json_obj = json.loads(data.read())
 
-        style = {'font': json_obj['font'], 'size': json_obj["size"], 'line_spacing': json_obj["line_spacing"],
-                 'after_spacing': json_obj["after_spacing"], 'before_spacing': json_obj["before_spacing"],
-                 'page_width': json_obj["page_width"], 'page_height': json_obj["page_height"],
-                 'left_margin': json_obj["left_margin"], 'bottom_margin': json_obj["bottom_margin"],
-                 'right_margin': json_obj["right_margin"], 'top_margin': json_obj["top_margin"],
-                 'header': json_obj["header"], 'footer': json_obj["footer"], 'gutter': json_obj["gutter"],
-                 'indent': json_obj["indent"]}
-        return style
-    except FileNotFoundError:
-        raise Exception(filepath + " not found")
+    style = {'font': json_obj['font'], 'size': json_obj["size"], 'line_spacing': json_obj["line_spacing"],
+             'after_spacing': json_obj["after_spacing"], 'before_spacing': json_obj["before_spacing"],
+             'page_width': json_obj["page_width"], 'page_height': json_obj["page_height"],
+             'left_margin': json_obj["left_margin"], 'bottom_margin': json_obj["bottom_margin"],
+             'right_margin': json_obj["right_margin"], 'top_margin': json_obj["top_margin"],
+             'header': json_obj["header"], 'footer': json_obj["footer"], 'gutter': json_obj["gutter"],
+             'indent': json_obj["indent"]}
+    return style
 
 
 def update_format_file(filepath, style):
@@ -83,97 +86,108 @@ def update_format_file(filepath, style):
     Returns
     -------
     bool
-        Will return True if the style was stored successfully, otherwise False is either the style was wrong or there
-        was a permission error.
+        Will return True if the style was stored successfully.
+
+    Raises
+    ------
+    PermissionError
+        Raised whenever missing the correct permissions to access a file at filepath.
+    KeyError
+        Raised when providing an incomplete style dictionary
     """
     if set(style.keys()) != set(get_style().keys()):
-        return False
+        raise KeyError
 
-    try:
-        json_obj = json.dumps(style, indent=1)
-        data = open(filepath, 'w')
-        data.write(json_obj)
-        return True
-
-    except PermissionError:
-        return False
+    json_obj = json.dumps(style, indent=1)
+    data = open(filepath, 'w')
+    data.write(json_obj)
+    data.close()
+    return True
 
 
 class Format:
     """
-    The Format class handles all of the .doc and .docx XML decompiling to generate a dictionary of the document's currently
-    used fonts, sizes, and other formatting.
+    The Format class handles all of the .doc and .docx XML decompiling to generate a dictionary of the document's
+    currently used fonts, sizes, and other formatting.
 
     Parameters
     ----------
     filepath : str
         This should be a filepath to the docx that you want to read. Giving it any other type of file will produce
         an error.
+
+    Raises
+    ------
+    FileNotFoundError
+        The given filepath doesn't exist.
+    PermissionError
+        The given file cannot be read.
+    BadZipFile
+        The given file cannot be unzipped.
+    KeyError
+        The file cannot be read correctly, most likey due to being broken.
     """
     __slots__ = ('__document', '__font', '__word_count', '__page_count', '__default_style')
 
     def __init__(self, filepath):
-        try:
-            # Opening up the needed xml documents
-            file_tree = zipfile.ZipFile(filepath)
-            self.__document = xml.etree.ElementTree.XML(file_tree.read('word/document.xml'))
-            self.__font = xml.etree.ElementTree.XML(file_tree.read('word/fontTable.xml'))
-            general = xml.etree.ElementTree.XML(file_tree.read('docProps/app.xml'))
-            style = xml.etree.ElementTree.XML(file_tree.read('word/styles.xml'))
+        # Opening up the needed xml documents
+        file_tree = zipfile.ZipFile(filepath)
+        self.__document = xml.etree.ElementTree.XML(file_tree.read('word/document.xml'))
+        self.__font = xml.etree.ElementTree.XML(file_tree.read('word/fontTable.xml'))
+        general = xml.etree.ElementTree.XML(file_tree.read('docProps/app.xml'))
+        style = xml.etree.ElementTree.XML(file_tree.read('word/styles.xml'))
 
-            # Saving these values for later so we don't need to keep general
-            self.__word_count = int(general.find(WORD_PROPERTIES + 'Words').text)
-            self.__page_count = int(general.find(WORD_PROPERTIES + 'Pages').text)
+        # Saving these values for later so we don't need to keep general
+        self.__word_count = int(general.find(WORD_PROPERTIES + 'Words').text)
+        self.__page_count = int(general.find(WORD_PROPERTIES + 'Pages').text)
 
-            # Need to get the default style now
-            rPr = style.find(WORD_NAMESPACE + 'docDefaults').find(WORD_NAMESPACE + 'rPrDefault') \
-                .find(WORD_NAMESPACE + 'rPr')
-            pPr = style.find(WORD_NAMESPACE + 'docDefaults').find(WORD_NAMESPACE + 'pPrDefault') \
-                .find(WORD_NAMESPACE + 'pPr')
-            secPr = self.__document.find(WORD_NAMESPACE + 'body').find(WORD_NAMESPACE + 'sectPr')
+        # Need to get the default style now
+        rPr = style.find(WORD_NAMESPACE + 'docDefaults').find(WORD_NAMESPACE + 'rPrDefault') \
+            .find(WORD_NAMESPACE + 'rPr')
+        pPr = style.find(WORD_NAMESPACE + 'docDefaults').find(WORD_NAMESPACE + 'pPrDefault') \
+            .find(WORD_NAMESPACE + 'pPr')
+        secPr = self.__document.find(WORD_NAMESPACE + 'body').find(WORD_NAMESPACE + 'sectPr')
 
-            font = ''
-            size = '24'
-            line = '240'
-            after = '0'
-            before = '0'
-            if rPr is not None:
-                rFonts = rPr.find(WORD_NAMESPACE + 'rFonts')
-                if WORD_NAMESPACE + 'ascii' in rFonts.keys():
-                    font = rFonts.attrib[WORD_NAMESPACE + 'ascii']
-                else:
-                    if WORD_NAMESPACE + 'asciiTheme' in rFonts.keys():
-                        font = rFonts.attrib[WORD_NAMESPACE + 'asciiTheme']
-                if WORD_NAMESPACE + 'val' in rPr.keys():
-                    size = rPr.find(WORD_NAMESPACE + 'sz').attrib[WORD_NAMESPACE + 'val']
-            if pPr is not None:
-                if WORD_NAMESPACE + 'line' in pPr.keys():
-                    line = pPr.find(WORD_NAMESPACE + 'spacing').attrib[WORD_NAMESPACE + 'line']
-                if WORD_NAMESPACE + 'after' in pPr.keys():
-                    after = pPr.find(WORD_NAMESPACE + 'spacing').attrib[WORD_NAMESPACE + 'after']
-                if WORD_NAMESPACE + 'before' in pPr.keys():
-                    before = pPr.find(WORD_NAMESPACE + 'spacing').attrib[WORD_NAMESPACE + 'before']
+        font = ''
+        size = '24'
+        line = '240'
+        after = '0'
+        before = '0'
+        if rPr is not None:
+            rFonts = rPr.find(WORD_NAMESPACE + 'rFonts')
+            if WORD_NAMESPACE + 'ascii' in rFonts.keys():
+                font = rFonts.attrib[WORD_NAMESPACE + 'ascii']
+            else:
+                if WORD_NAMESPACE + 'asciiTheme' in rFonts.keys():
+                    font = rFonts.attrib[WORD_NAMESPACE + 'asciiTheme']
+            if WORD_NAMESPACE + 'val' in rPr.keys():
+                size = rPr.find(WORD_NAMESPACE + 'sz').attrib[WORD_NAMESPACE + 'val']
+        if pPr is not None:
+            if WORD_NAMESPACE + 'line' in pPr.keys():
+                line = pPr.find(WORD_NAMESPACE + 'spacing').attrib[WORD_NAMESPACE + 'line']
+            if WORD_NAMESPACE + 'after' in pPr.keys():
+                after = pPr.find(WORD_NAMESPACE + 'spacing').attrib[WORD_NAMESPACE + 'after']
+            if WORD_NAMESPACE + 'before' in pPr.keys():
+                before = pPr.find(WORD_NAMESPACE + 'spacing').attrib[WORD_NAMESPACE + 'before']
 
-            pgSzW = secPr.find(WORD_NAMESPACE + 'pgSz').attrib[WORD_NAMESPACE + 'w']
-            pgSzH = secPr.find(WORD_NAMESPACE + 'pgSz').attrib[WORD_NAMESPACE + 'h']
-            pgMarLeft = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'left']
-            pgMarBottom = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'bottom']
-            pgMarRight = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'right']
-            pgMarTop = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'top']
-            header = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'header']
-            footer = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'footer']
-            gutter = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'gutter']
+        pgSzW = secPr.find(WORD_NAMESPACE + 'pgSz').attrib[WORD_NAMESPACE + 'w']
+        pgSzH = secPr.find(WORD_NAMESPACE + 'pgSz').attrib[WORD_NAMESPACE + 'h']
+        pgMarLeft = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'left']
+        pgMarBottom = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'bottom']
+        pgMarRight = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'right']
+        pgMarTop = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'top']
+        header = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'header']
+        footer = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'footer']
+        gutter = secPr.find(WORD_NAMESPACE + 'pgMar').attrib[WORD_NAMESPACE + 'gutter']
 
-            # Saving all these values as an easy to access dictionary
-            self.__default_style = {'font': font, 'size': int(size) / 2, 'line_spacing': int(line) / 240,
-                                    'after_spacing': int(after) / 20, 'before_spacing': int(before) / 20,
-                                    'page_width': int(pgSzW) / 1440, 'page_height': int(pgSzH) / 1440,
-                                    'left_margin': int(pgMarLeft) / 1440, 'bottom_margin': int(pgMarBottom) / 1440,
-                                    'right_margin': int(pgMarRight) / 1440, 'top_margin': int(pgMarTop) / 1440,
-                                    'header': int(header) / 1440, 'footer': int(footer) / 1440,
-                                    'gutter': int(gutter) / 1440}
-        except FileNotFoundError:
-            raise FileNotFoundError(filepath + "not found")
+        # Saving all these values as an easy to access dictionary
+        self.__default_style = {'font': font, 'size': int(size) / 2, 'line_spacing': int(line) / 240,
+                                'after_spacing': int(after) / 20, 'before_spacing': int(before) / 20,
+                                'page_width': int(pgSzW) / 1440, 'page_height': int(pgSzH) / 1440,
+                                'left_margin': int(pgMarLeft) / 1440, 'bottom_margin': int(pgMarBottom) / 1440,
+                                'right_margin': int(pgMarRight) / 1440, 'top_margin': int(pgMarTop) / 1440,
+                                'header': int(header) / 1440, 'footer': int(footer) / 1440,
+                                'gutter': int(gutter) / 1440}
 
     def get_font_table(self):
         """
@@ -350,7 +364,7 @@ class Format:
             # Checking every sentence break-up
             for r in p.iter(WORD_NAMESPACE + 'r'):
                 t = r.find(WORD_NAMESPACE + 't')
-                # Attempt to any text
+                # Attempt to get any text
                 if t is not None:
                     text += t.text
 
