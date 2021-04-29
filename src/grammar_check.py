@@ -20,8 +20,16 @@ def number_of_errors(text):
         The tuple consists of a list and the corrected text.
         The list contains the pairs of the error and the suggested correction.
         The corrected text is a string file of raw text.
+
+    Raises
+    ------
+    TypeError
+        You will get this if you pass in anything other than a string.
     """
     pair = []
+
+    if type(text) is not str:
+        raise TypeError("text must be a string")
 
     matches = tool.check(text)
 

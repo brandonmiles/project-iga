@@ -11,6 +11,15 @@ class KeyWords:
     filepath : str
         An optional filepath to a .csv containing a list of keywords. Not providing a filepath means starting with an
         empty keyword list that can be filled in over time.
+
+    Raises
+    ------
+    TypeError
+        You can only get this exception if you attempt to pass in a non-string value into init.
+    FileNotFoundError
+        You will get this if the given filepath points to a non-existent file.
+    PermissionError
+        You will get this if you don't have permission to read folder/file given in filepath.
     """
 
     __slots__ = ('__filepath', '__keys')
@@ -20,10 +29,11 @@ class KeyWords:
         self.__keys = []
 
         if filepath is not None:
-            try:
-                self.__keys = open(filepath, 'r').read().split(',')
-            except FileNotFoundError:
-                print(filepath, " not found")
+            if type(filepath) is not str:
+                raise TypeError("filepath must be a string that represents a filepath.")
+            file = open(filepath, 'r')
+            self.__keys = file.read().split(',')
+            file.close()
 
     def occurrence(self, text):
         """
