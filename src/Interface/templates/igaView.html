@@ -1,0 +1,428 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block content %}
+
+<style>
+.center {
+  text-align: center;
+  border: 3px 337ab7;
+  padding: 5px;
+  text-align: center;
+  background:#337ab7;
+  color: white;
+  font-size: 35px;
+  }
+.color {
+  color:darkblue;
+  font-size:20px;
+  }
+
+.button-color {
+	color:black;
+	}
+	
+fields {
+	display:table;
+	
+	}
+.fields-row {
+	display: table-row;
+	display: grid-inline;
+	}
+label {
+	display: table-cell;
+	}
+input {
+	display: table-cell;
+	}
+
+.modal-header {
+	background-color: #337AB7;
+	padding:16px 16px;
+	color:#FFF;
+	border-bottom:2px dashed: #337AB7;
+}
+
+.code {
+   font: small-caps bold 12px/30px Georgia, serif;
+}
+
+.codeBold {
+   font: bold 12px/30px Georgia, serif;
+}
+</style>
+
+ 
+
+<script>
+
+</script>
+
+<div class="container-fluid p-3" style="border:1px solid #cecece; padding-left:10px; padding-right:10px; padding-top:10px; padding-bottom: 0px">
+	<div class="center">
+		Intelligent Grading Assistant
+	</div>
+	<nav class="navbar navbar-inverse">
+	  <div class="container-fluid">
+		<div class="navbar-header" style="padding:10px;">
+			<button type="button" class="btn btn-primary"  data-toggle="modal"  data-target="#preferenceModal">
+				Set Preferences
+			</button>
+			<div>
+			{% with messages = get_flashed_messages() %}
+				{% if messages %}
+					{% for message in messages %}
+						<div class="alert alert-warning alert-dismissible" style="float:right" role="alert">
+							<button type="button" class="close"  data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+							{{message}}
+						</div>
+					{% endfor %}
+				{% endif %}
+			{% endwith %}
+			</div>
+		</div>
+	  </div>
+	</nav>	
+	
+  </div>
+
+  
+  
+  <div class="modal fade" id="preferenceModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog"  role="document" style="width:1200px">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Set Preferences</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    
+	  <form name='preferencesForm' method="post" action="/updatePreference" style='text-align: center;'>
+	    <div class="modal-body" >
+			<div class="panel panel-primary" >
+					<div class="panel-heading">
+						Preferences
+					</div>
+					<div class="panel-body">
+						<div class="panel-body" style="float:left; width:33.33%; height:100%;">
+							<fields>
+								<div class = "color">Rubric
+								</div>
+									
+								<div class = "fields-row">
+										<label>Grammar</label>
+										<input type="number" name="rubric1" value="5" min="1" max="10">
+								</div>
+								<div class = "fields-row">
+										<label>Key Words</label>
+										<input type="number" name="rubric2" value="5" min="1" max="10">
+								</div>
+								<div class = "fields-row">
+									<label>Length</label>
+									<input type="number" name="rubric3" value="5" min="1" max="10">
+								</div>
+								<div class = "fields-row">
+									<label>Format</label>
+									<input type="number" name="rubric4" value="5" min="1" max="10">
+								</div>
+								<div class = "fields-row">
+									<label>Model</label>
+									<input type="number" name="rubric5" value="5" min="1" max="10">
+								</div>
+								<div class = "fields-row">
+									<label>Reference</label>
+									<input type="number" name="rubric6" value="5" min="1" max="10">
+								</div>
+								
+							</fields>
+						</div>
+						
+					
+						<div class="panel-body" style="float:left; width:33.33%; height:100%;">
+							<fields>
+								<div class="color">Weights</div>
+										<div class = "fields-row">
+											<label>Grammar</label>
+											<input type="number" name="weights1" value="1" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Allowed Mistakes</label>
+											<input type="number" name="weights2" value="3" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Key Maximum</label>
+											<input type="number" name="weights3" value="3" min="1">
+										</div>
+										<div class = "fields-row">
+											<label>Key minimum</label>
+											<input type="number" name="weights4" value="0" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Word Minimum</label>
+											<input type="number" name="weights5" value="300" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Word Maximum</label>
+											<input type="number" name="weights6" value="500" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Page Minimum</label>
+											<input type="number" name="weights7" value="1" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Page Maximum</label>
+											<input type="number" name="weights8" value="4" min="0">
+										</div><div class = "fields-row">
+											<label>Format</label>
+											<input type="number" name="weights9"  value="5" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Reference</label>
+											<input type="number" name="weights10" value="5" min="0">
+										</div>
+							</fields>	
+						</div>
+						<div class="panel-body" style="float:left; width:33.33%; height:100%;">
+							<fields>
+								<div class="color">Style</div>
+										<div class = "fields-row">
+											<label>Font</label>
+											<select name="style1">
+												<option value="Times New Roman">Times New Roman</option>
+												<option value="Calibri Math">Calibri Math</option>
+												<option value="None">None</option>
+											</select>
+										</div>
+										<div class = "fields-row">
+											<label>Size</label>
+											<input type="number" name="style2" value="12" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Line Spacing</label>
+											<input type="number" name="style3" value="2.0" step="0.1" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>After Spacing</label>
+											<input type="number" name="style4" value="0.0" step="0.1" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Before Spacing</label>
+											<input type="number" name="style5" value="0.0" step="0.1" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Page Width</label>
+											<input type="number" name="style6" value="8.5" step="0.1" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Page Height</label>
+											<input type="number" name="style7" value="11" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Left Margin</label>
+											<input type="number" name="style8" value="1.0" step="0.1" min="0">
+										</div><div class = "fields-row">
+											<label>Bottom Margin</label>
+											<input type="number" name="style9"  value="1.0" step="0.1" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Right Margin</label>
+											<input type="number" name="style10" value="1.0" step="0.1" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Top Margin</label>
+											<input type="number" name="style11" value="1.0" step="0.1" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Header</label>
+											<input type="number" name="style12" value="0.0" step="0.1" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Footer</label>
+											<input type="number" name="style13" value="0.0" step="0.1" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Gutter</label>
+											<input type="number" name="style14" value="0.0" step="0.1" min="0">
+										</div>
+										<div class = "fields-row">
+											<label>Indent</label>
+											<input type="number" name="style15" value="1.0" step="0.1" min="0">
+										</div>
+							</fields>
+						</div>
+					</div>
+			</div>
+		</div>
+		 <div class="modal-footer">
+			<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			<button type="submit" value="updatePreference" class="btn btn-primary">Save Preferences</button>
+		</div>
+	   </form>
+	  
+     
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="emailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Enter Email</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+     
+		  <form name='mailForm' method="post" action="/updateEmail" style='text-align: center;'>
+			   <div class="modal-body" style="height:50px" >
+							<div class="col-md-1">
+								Email:
+							</div>
+							<div class="col-md-3">
+								<input type="email" name="email" placeholder="">
+							</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="submit" class="btn btn-primary">Save Email</button>
+				</div>	
+		  </form>
+     
+      
+    </div>
+  </div>
+</div>
+
+
+
+  <form action="" method="post" class="form" role="form" enctype="multipart/form-data" >
+    {{ form.csrf_token() }}
+	{{ form.hidden_tag() }}
+    {{ form.submitEvaluate}}
+    {{ form.submitSave }}
+	{{ form.submitEmail }}
+	{{ form.submitSave }}
+	
+	<div class="row row-cols-2" style="padding-left:10px; padding-right:10px; padding-top:0px; padding-bottom: 0px">
+		<div class="col-lg-8">
+			<div class="panel panel-primary">
+					<div class="panel-heading">
+						<div class="panel-heading row">
+							
+							<div class = "col-md-3">
+								Enter Essay or Upload File: 
+							</div>
+							
+							 <form method="post" enctype="multipart/form-data">
+								<div class="col-md-3" style="padding:0; width:5px;">
+									 <input  type="file" name="file" >
+									 </input>
+								</div>
+								<div class="col-md-3" style="padding:0; width:5px; margin-left:350px">
+									  <input type ="submit" name="upload" value="Upload" class="button-color">
+									  
+								</div>
+								
+							
+							 </form>
+							
+						</div>
+					</div>
+					<div class="panel-body">
+						<div style="padding:0; width:500px">
+								{{ wtf.form_field(form.uploadFile, class='form-control code', placeholder='') }}  
+						</div>
+						{{ wtf.form_field(form.essay, class='form-control', style="height: 500px", placeholder='') }}
+						{{ wtf.form_field(form.email, class='form-control code', style ="height:30px; ", placeholder='') }}
+							<button type="submit" name="Evaluate" class="btn btn-primary" value = "Evaluate">Submit</button>
+							<button type="submit" name="Reset" class="btn btn-primary" value = "Reset">Refresh</button>
+					</div>
+					
+			</div>
+
+			<div class="panel panel-primary" style="padding-top:0px">
+					<div class="panel-heading">
+						<div class="panel-heading row">
+							
+							<div class = "col-md-3">
+								Current Settings: 
+							</div>
+							
+						</div>
+					</div>
+					<div class="panel-body">
+						{{ wtf.form_field(form.rubric, class='form-control code', style ="height:30px;  ", placeholder='') }}
+						{{ wtf.form_field(form.weights, class='form-control code', style ="height:30px;  ", placeholder='') }}
+						{{ wtf.form_field(form.style, class='form-control code', style ="height:30px;", placeholder='') }}
+					</div>
+					
+			</div>
+		</div>
+		
+	
+		<div class="col-lg-4">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					{{ wtf.form_field(form.grade, class='form-control code', placeholder='Grade') }}
+				</div>
+				<div class="panel-body">
+					<div class="panel panel-primary" style="height:295px">
+						<div class="panel-heading" >
+							<div class="panel-heading row">
+								
+								<div class = "col-md-3">
+									Feedback: 
+								</div>
+								
+							</div>
+							
+						</div>
+							<div class="panel-body">
+								{{ wtf.form_field(form.response, class='form-control codeBold', style="height: 200px", placeholder='') }}
+							</div>
+					</div>
+					
+					<div class="panel panel-primary" style="height:295px">
+						<div class="panel-heading">
+							<div class="panel-heading row">
+								
+								<div class = "col-md-3">
+									Error: 
+								</div>
+					
+							</div>
+							
+						</div>
+							<div class="panel-body">
+								{{ wtf.form_field(form.error, class='form-control codeBold', style="height: 200px", placeholder='') }}
+							</div>
+					</div>
+					<div class="panel panel-primary" style="height:295px">
+						<div class="panel-heading">
+							<div class="panel-heading row">
+								
+								<div class = "col-md-6">
+									Evaluation Statistics: 
+								</div>
+								
+							</div>
+							
+						</div>
+							<div class="panel-body">
+								{{ wtf.form_field(form.information, class='form-control code', style="height: 200px", placeholder='') }}
+							</div>
+					</div>
+					
+				</div>	
+			</div>
+		</div>
+	
+	</div>
+ </form>
+
+ 
+
+{% endblock %}

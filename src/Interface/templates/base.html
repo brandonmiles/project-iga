@@ -1,0 +1,12 @@
+<html>
+    <head>
+      {% if title %}
+      <title>{{ title }} - IGA</title>
+      {% else %}
+      <title>Intelligent Grading Assistant</title>
+      {% endif %}
+    </head>
+    <body>
+        {% block content %}{% endblock %}
+    </body>
+</html>
