@@ -116,7 +116,7 @@ venv>> pip install -r requirements.txt
 7. Run "iga.bat" to start the server.
 8. Using your browser, go to 127.0.0.1:5000 to interface with the application.
 
-Using Autodoc with Sphinx
+Autodoc-ing with Sphinx
 =========================
 Author: Brandon Miles
 
