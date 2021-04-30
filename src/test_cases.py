@@ -184,6 +184,36 @@ class FormatUnit(unittest.TestCase):
                          ('Arial Black', 12.0), ('Arial Black', 10.0), ('Times New Roman', 10.0), ('Arial', 12.0)],
                          "format gave an incorrect font list.")
 
+    def test_spacing_recognition(self):
+        f = format.Format(FILEPATH + 'single_spacing.docx')
+        self.assertEqual(f.get_spacing(), [(1.0, 0.0, 0.0)], "format returned incorrect spacing list")
+
+    def test_multiple_spacing_recognition(self):
+        f = format.Format(FILEPATH + 'multiple_spacing.docx')
+        self.assertEqual(f.get_spacing(),
+                         [(1.0, 0.0, 0.0), (1.15, 8.0, 12.0), (3.0, 0.0, 12.0)],
+                         "format returned incorrect spacing list")
+
+    def test_no_indent(self):
+        f = format.Format(FILEPATH + 'no_indent.docx')
+        self.assertEqual(f.get_indentation(), 0.0, "format couldn't correctly calculate indention score")
+
+    def test_all_indent(self):
+        f = format.Format(FILEPATH + 'all_indent.docx')
+        self.assertEqual(f.get_indentation(), 1.0, "format couldn't correctly calculate indention score")
+
+    def test_mixed_indent(self):
+        f = format.Format(FILEPATH + 'mixed_indent.docx')
+        self.assertEqual(f.get_indentation(), 0.5, "format couldn't correctly calculate indention score")
+
+    def test_consistent_margin(self):
+        f = format.Format(FILEPATH + 'consistent_margin.docx')
+        self.assertEqual(f.get_margin(), 0.0, "format couldn't correctly calculate margin score")
+
+    def test_mixed_margin(self):
+        f = format.Format(FILEPATH + 'mixed_margin.docx')
+        self.assertEqual(f.get_margin(), 1.25, "format couldn't correctly calculate margin score")
+
 
 if __name__ == "__main__":
     unittest.main()

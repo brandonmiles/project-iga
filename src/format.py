@@ -151,7 +151,7 @@ class Format:
         font = ''
         size = '24'
         line = '240'
-        after = '0'
+        after = '160'
         before = '0'
         if rPr is not None:
             rFonts = rPr.find(WORD_NAMESPACE + 'rFonts')
@@ -314,12 +314,12 @@ class Format:
                             if int(ind.attrib[WORD_NAMESPACE + 'firstLine']) != 0:
                                 indent += 0.5
 
-            return indent / paragraph_number
+        return indent / paragraph_number
 
     def get_margin(self):
         """
-        Returns a score between 0 and 2 based on the margins, where 0 indicates consistent margins and
-        higher scores increasingly indicate inconsistent margins
+        Returns a score between 0 and 3 based on the margins, where 0 indicates consistent margins and
+        higher scores are increasingly inconsistent margins
 
         Returns
         -------
@@ -346,8 +346,11 @@ class Format:
                     if WORD_NAMESPACE + 'right' in ind.keys():
                         if int(ind.attrib[WORD_NAMESPACE + 'right']) != 0:
                             margin += 1
+                    if WORD_NAMESPACE + 'hanging' in ind.keys():
+                        if int(ind.attrib[WORD_NAMESPACE + 'hanging']) != 0:
+                            margin += 1
 
-            return margin / paragraph_number
+        return margin / paragraph_number
 
     def get_text(self):
         """
