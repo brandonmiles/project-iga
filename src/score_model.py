@@ -270,7 +270,7 @@ class ScoreModel(Model):
             if set_number == 8:
                 y.loc[i, 'normal'] = x.loc[i, 'domain1_score'] / 60
 
-        return self.train_and_test(x, y, 2, 2)
+        return self.train_and_test(x, y, 4, 4)
 
 
 class IdeaModel(Model):
