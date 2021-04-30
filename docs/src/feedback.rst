@@ -1,4 +1,4 @@
-feedback module
+feedback
 ===============
 
 .. automodule:: feedback

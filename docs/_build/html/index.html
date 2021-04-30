@@ -2,7 +2,7 @@
 <html class="no-js">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="add_comments" href="src/add_comments.html" />
 
     <meta name="generator" content="sphinx-3.5.4, furo 2021.04.11.beta34"/>
         <title>Home - Intelligent Grading Assistant 1.0 documentation</title>
@@ -107,7 +107,23 @@
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form><div class="sidebar-scroll"><div class="sidebar-tree">
-  
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="src/add_comments.html">add_comments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/change_score.html">change_score</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/comments.html">comments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/feedback.html">feedback</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/format.html">format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/grade.html">grade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/grammar_check.html">grammar_check</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/keywords.html">keywords</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/main.html">main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/preprocessing.html">preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/references.html">references</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/score_model.html">score_model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/score_model_helper.html">score_model_helper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/select_essays.html">select_essays</a></li>
+</ul>
+
 </div>
 </div>
       </div>
@@ -125,8 +141,149 @@
 <div class="toctree-wrapper compound">
 </div>
 </div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>Here, you can find most of* the documentation for the Intelligent Grading Assistant (IGA) project. This includes auto-generated code documentation, as well as documentation regarding the database and website. To browse the documentation, you can either go to the “Code Documentation” section (on the left or below), or use the search bar to the left. There are also indices at the bottom of the page.</p>
+<p>(!) Note: If you are viewing this on the Read The Docs (RTD) website, then you likely won’t see the “grade” and “main” modules. This is because an error arises during RTD’s build process, which can be readily viewed via the build logs. The easiest way to get around this error is to simply build the documentation on your local machine using “make html”.</p>
+</div>
+<div class="section" id="the-database">
+<h1>The Database<a class="headerlink" href="#the-database" title="Permalink to this headline">¶</a></h1>
+<p>Author: Jason Garza</p>
+<p>The database used for this project is an AWS RDS database. The security for this database is managed so that it can only be accessed through our ec2 instance. This means that in order to connect to the database, the ec2 instance must also be running.</p>
+<p><strong>Accessing the Database</strong></p>
+<p>First, the database should be running. Check the RDS page in the AWS console to make sure that the database is running. To connect directly through the ec2 instance, you must ssh into the instance, which will require the .pem file. Once connected to the ec2 instance, you can use the command:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">mysql</span> <span class="pre">-h</span>
+<span class="pre">database-1.cluster-cf5kjev2ovc7.us-east-1.rds.amazonaws.com</span> <span class="pre">-u</span>
+<span class="pre">admin</span> <span class="pre">-p</span> <span class="pre">IGA_DB</span>
+<span class="pre">`</span></code></p>
+<p>to connect to the database. (Although it appears on separate lines in this doc, this is one command and should be one line) To connect through MySQL Workbench, first make sure the database and the ec2 instance are running. The first time you connect, you will need to add a new connection to MySQL workbench.</p>
+<ul class="simple">
+<li><p>Select “Standard TCP/IP over SSH” as the connection method</p></li>
+<li><p>The SSH Hostname is ec2-23-21-141-182.compute-1.amazonaws.com</p></li>
+<li><p>The SSH Username is “ec2-user”</p></li>
+<li><p>The SSH key file is the .pem file</p></li>
+</ul>
+<p><strong>Tables</strong></p>
+<p>The first three tables are TestEssays, TrainingEssays, and ValidSet. These tables exactly match the corresponding .tsv files that can be found in the data folder in the GitHub repository. As of right now, these tables are not being used, and instead the programs are accessing the .tsv files.</p>
+<p><strong>UserEssays</strong></p>
+<p>This table is used to store any text only essays. As of right now, the website only supports essays that are uploaded as word documents or pdfs, so this table is not currently used. If it is deemed necessary to allow users to submit only the text of their essay, this table should be used to store those essays. For that to happen, it would need to have attributes such as date and email added to it so that it can work with the most recent version of the website. If necessary, this table can be recreated with the following command:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">CREATE</span> <span class="pre">TABLE</span> <span class="pre">IF</span> <span class="pre">NOT</span> <span class="pre">EXISTS</span> <span class="pre">UserEssays</span> <span class="pre">(essay_id</span> <span class="pre">INT</span>
+<span class="pre">AUTO_INCREMENT</span> <span class="pre">PRIMARY</span> <span class="pre">KEY,</span> <span class="pre">essay</span> <span class="pre">TEXT,</span> <span class="pre">grade</span> <span class="pre">FLOAT,</span> <span class="pre">feedback</span> <span class="pre">TEXT);</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li><p>essay_id: This is used as the primary key for the table. Since it has the auto increment property, this value will be automatically assigned to any rows that are added to this table. You do not need to manually assign this value.</p></li>
+<li><p>essay: The text of the essay.</p></li>
+<li><p>grade: The grade given to the essay.</p></li>
+<li><p>feedback: The feedback given to the essay.</p></li>
+</ul>
+<p><strong>UserFiles</strong></p>
+<p>This table stores essays that are uploaded as files, which can either be .docx files or .pdf files. It stores the binary data of the files, which can be accessed later on. To see how to access the binary data stored in this table, look at how the results route in app.py retrieves the essay’s text from the database. It’s important that you delete any temp files that you create using os.remove(), so that the ec2 instance does not run out
+of storage.</p>
+<p>If necessary, this table can be recreated with the following command:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">CREATE</span> <span class="pre">TABLE</span> <span class="pre">IF</span> <span class="pre">NOT</span> <span class="pre">EXISTS</span> <span class="pre">UserFiles</span> <span class="pre">(file_id</span> <span class="pre">INT</span> <span class="pre">AUTO_INCREMENT</span> <span class="pre">PRIMARY</span> <span class="pre">KEY,</span> <span class="pre">name</span> <span class="pre">CHAR(50),</span> <span class="pre">data</span> <span class="pre">LONGBLOB,</span> <span class="pre">grade</span> <span class="pre">FLOAT,</span> <span class="pre">feedback</span> <span class="pre">TEXT,</span> <span class="pre">error</span> <span class="pre">TEXT,</span> <span class="pre">email</span> <span class="pre">CHAR(70),</span> <span class="pre">upload_date</span> <span class="pre">DATETIME);</span>
+<span class="pre">`</span></code></p>
+<ul class="simple">
+<li><p>file_id: This is used as the primary key for the table. Since it has the auto increment property, this value will be automatically assigned to any rows that are added to this table. You do not need to manually assign this value.</p></li>
+<li><p>name: The name of the file that was uploaded.</p></li>
+<li><p>data: The binary data of the file.</p></li>
+<li><p>grade: The grade given to the essay.</p></li>
+<li><p>feedback: The feedback given to the essay.</p></li>
+<li><p>error: The error information that is displayed on the website. Provides some insight on why points were taken off.</p></li>
+<li><p>email: The email address entered by the user when they uploaded this file. An email containing a link where the user can view their essay is sent to this email. This email is also used to retrieve the essay from the database when the user clicks on the link</p></li>
+<li><p>upload_date: The date and time that the user uploaded their essay. This serves two purposes. The first is that every day at 5:25 AM UTC (12:25 AM CDT, 11:25 PM CST) the database checks for essays that are at least a week old, and deletes them. The second is that this is used to retrieve the essay from the database when the user clicks on their link, which means if they have multiple essays currently in the database, they will have a unique link for each one.</p></li>
+</ul>
+<p><strong>Events</strong></p>
+<p>In order to delete essays that are at least a week old every day, an event is used. For the event to be executed, the event scheduler must be on. For an RDS database, this is done by creating a parameter group in the AWS console that has the parameter event_scheduler set to 1, and then associating this parameter group with the database.</p>
+<p>This is the event used to delete the essays:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">CREATE</span> <span class="pre">EVENT</span> <span class="pre">delete_old_essays</span> <span class="pre">ON</span> <span class="pre">SCHEDULE</span> <span class="pre">EVERY</span> <span class="pre">1</span> <span class="pre">DAY</span>
+<span class="pre">STARTS</span> <span class="pre">str_to_date(</span> <span class="pre">date_format(now(),</span> <span class="pre">'%Y%m%d</span> <span class="pre">0525'),</span>
+<span class="pre">'%Y%m%d</span> <span class="pre">%H%i'</span> <span class="pre">)</span> <span class="pre">ON</span> <span class="pre">COMPLETION</span> <span class="pre">PRESERVE</span> <span class="pre">ENABLE</span> <span class="pre">DO</span> <span class="pre">DELETE</span> <span class="pre">FROM</span> <span class="pre">UserFiles</span> <span class="pre">WHERE</span> <span class="pre">upload_date</span> <span class="pre">&lt;</span> <span class="pre">DATE_SUB(NOW(),</span>
+<span class="pre">INTERVAL</span> <span class="pre">7</span> <span class="pre">DAY);</span>
+<span class="pre">`</span></code></p>
+<p>EVERY 1 DAY is what makes this event executes every day.</p>
+<p>STARTS is used to start the event on the day that it is created by using now(), and 0525 is the time that it will be executed each day.</p>
+<p>ON COMPLETION PRESERVE ENABLE is used to ensure that this event stays active.</p>
+<p>DATE_SUB(NOW() INTERVAL 7 DAY) subtracts 7 days from the current date. Any essays with an upload_date lower than this date will be deleted from the database.</p>
+</div>
+<div class="section" id="setting-up-the-website">
+<h1>Setting Up the Website<a class="headerlink" href="#setting-up-the-website" title="Permalink to this headline">¶</a></h1>
+<p>(Author: Gautam Iyer)</p>
+<ol class="arabic simple">
+<li><p>Create a directory for the project (e.g., “project-iga”).</p></li>
+<li><p>Open console (e.g., cmd for Windows).</p></li>
+<li><p>Enter the directory and create a venv (virtual environment) using python -m venv venv.</p></li>
+<li><p>Change directory (cd) to the project directory.</p></li>
+<li><p>Enter venv\scripts\activate to activate venv.</p></li>
+<li><p>Install all the requirements:</p></li>
+</ol>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">venv&gt;&gt;</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span>
+<span class="pre">`</span></code></p>
+<ol class="arabic simple" start="7">
+<li><p>Run “iga.bat” to start the server.</p></li>
+<li><p>Using your browser, go to 127.0.0.1:5000 to interface with the application.</p></li>
+</ol>
+</div>
+<div class="section" id="using-autodoc-with-sphinx">
+<h1>Using Autodoc with Sphinx<a class="headerlink" href="#using-autodoc-with-sphinx" title="Permalink to this headline">¶</a></h1>
+<p>Author: Brandon Miles</p>
+<p>The online documentation for this project was generated using Sphinx and built using Read the Docs. You can use the command</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">sphinx</span>
+<span class="pre">`</span></code></p>
+<p>to install Sphinx. (You can skip until the “STOP SKIPPING HERE” message if you want to use the existing documentation.) After it’s done installing, change directory (cd) to the “project-iga” directory. Use the command</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">mkdir</span> <span class="pre">docs</span>
+<span class="pre">`</span></code></p>
+<p>to create a documentation directory. Then, cd to the “docs” directory and run the command</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">sphinx-quickstart</span>
+<span class="pre">`</span></code></p>
+<p>This command creates an index.rst file (where you can edit the main page via Markdown) and a conf.py (for configuring Sphinx).</p>
+<p>In the conf.py file, you will want to change the “extensions” setting to</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">extensions</span> <span class="pre">=</span> <span class="pre">['sphinx.ext.napoleon']</span>
+<span class="pre">`</span></code></p>
+<p>Also, you’ll want to uncomment the “path setup” section at the top; this section includes paths to the code you’ve documented.</p>
+<p>After saving your conf.py file, run</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">sphinx-apidoc</span> <span class="pre">-f</span> <span class="pre">-o</span> <span class="pre">docs/src</span> <span class="pre">../src/</span>
+<span class="pre">`</span></code></p>
+<p>to build the documentation. (STOP SKIPPING HERE.) From now on, you can run</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">make</span> <span class="pre">html</span>
+<span class="pre">`</span></code></p>
+<p>to build the webpage documentation.</p>
+<p>The existing documentation should already be configured properly. Nonetheless, you should be cautious of the fact that Sphinx imports modules during the build process; this means that a module’s code will be run unless you include a __main__ check like the one at the top of grade.py.</p>
+</div>
+<div class="section" id="code-documentation">
+<h1>Code Documentation<a class="headerlink" href="#code-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="src/add_comments.html">add_comments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/change_score.html">change_score</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/comments.html">comments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/feedback.html">feedback</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/format.html">format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/grade.html">grade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/grammar_check.html">grammar_check</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/keywords.html">keywords</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/main.html">main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/preprocessing.html">preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/references.html">references</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/score_model.html">score_model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/score_model_helper.html">score_model_helper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/select_essays.html">select_essays</a></li>
+</ul>
+</div>
+</div>
+<hr class="docutils"/>
+<div class="section" id="indices">
+<h1>Indices<a class="headerlink" href="#indices" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
@@ -138,7 +295,15 @@
       <footer>
         
         <div class="related-pages">
-          
+          <a class="next-page" href="src/add_comments.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">add_comments</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
           
         </div>
 
@@ -171,7 +336,12 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Welcome to Intelligent Grading Assistant’s documentation!</a></li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#the-database">The Database</a></li>
+<li><a class="reference internal" href="#setting-up-the-website">Setting Up the Website</a></li>
+<li><a class="reference internal" href="#using-autodoc-with-sphinx">Using Autodoc with Sphinx</a></li>
+<li><a class="reference internal" href="#code-documentation">Code Documentation</a></li>
+<li><a class="reference internal" href="#indices">Indices</a></li>
 </ul>
 
           </div>

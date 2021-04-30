@@ -1,4 +1,4 @@
-comments module
+comments
 ===============
 
 .. automodule:: comments

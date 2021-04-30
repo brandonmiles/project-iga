@@ -1,4 +1,4 @@
-grade module
+grade
 ============
 
 .. automodule:: grade

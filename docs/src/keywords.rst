@@ -1,4 +1,4 @@
-keywords module
+keywords
 ===============
 
 .. automodule:: keywords

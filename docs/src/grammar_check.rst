@@ -1,4 +1,4 @@
-grammar\_check module
+grammar\_check
 =====================
 
 .. automodule:: grammar_check

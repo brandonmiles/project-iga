@@ -1,4 +1,4 @@
-add\_comments module
+add\_comments
 ====================
 
 .. automodule:: add_comments

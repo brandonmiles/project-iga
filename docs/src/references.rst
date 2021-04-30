@@ -1,4 +1,4 @@
-references module
+references
 =================
 
 .. automodule:: references

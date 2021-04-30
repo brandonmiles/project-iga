@@ -1,4 +1,4 @@
-select\_essays module
+select\_essays
 =====================
 
 .. automodule:: select_essays

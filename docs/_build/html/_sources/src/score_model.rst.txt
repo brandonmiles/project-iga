@@ -1,4 +1,4 @@
-score\_model module
+score\_model
 ===================
 
 .. automodule:: score_model

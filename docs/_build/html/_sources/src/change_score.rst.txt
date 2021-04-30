@@ -1,4 +1,4 @@
-change\_score module
+change\_score
 ====================
 
 .. automodule:: change_score
