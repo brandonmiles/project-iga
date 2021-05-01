@@ -1,14 +1,15 @@
-# Author:           Gautam Iyer 
-# Date:             02/20/2021
-# Project:          CS 4485.001 Spring 2021
-# Filename:         app.py
-# Description:      The start up application file that startsup the IGA Web Appliction based on Flask
-#
+"""
+ Author:           Gautam Iyer 
+ Date:             02/20/2021
+ Project:          CS 4485.001 Spring 2021
+ Filename:         app.py
+ Description:      The start up application file that startsup the IGA Web Appliction based on Flask
+ 
+"""
 
 # All Imports
 #-------------
-import sys
-sys.path.insert(0, '../')
+
 from flask import Flask, request, render_template, flash, redirect, url_for
 import os
 import os.path
@@ -63,6 +64,9 @@ else:
 # ------------------------
 conn = ''
 cursor = ''
+
+# Connect to database with the required host, username, password and name
+# ------------------------
 try:
     conn = mysql.connector.connect(host=app.config['DB_HOST'], user=app.config['DB_USERNAME'], passwd=app.config['DB_PASSWORD'], database=app.config['DB_NAME'])
     cursor = conn.cursor()
@@ -74,6 +78,8 @@ except Exception as e:
 command = "INSERT INTO UserFiles (name, data, grade, feedback, error, email, upload_date) VALUES (%s, %s, %s, %s, %s, %s, %s)"
 email = ''
 
+# Initialize rubric, weights and style dictionaries with default values
+# -------------------------------
 rubric = {'grammar': 5, 'key': 5, 'length': 5, 'format': 5, 'model': 5, 'reference': 5}
 # How easily or hard it is to lose points from each sections, use None to chose between word count and page count
 weights = {'grammar': 1, 'allowed_mistakes': 3, 'key_max': 3, 'key_min': 0, 'word_min': 300, 'word_max': 800,
@@ -85,7 +91,7 @@ style = {'font': allowed_fonts, 'size': 12, 'line_spacing': 2.0, 'after_spacing'
                       'before_spacing': 0.0, 'page_width': 8.5, 'page_height': 11, 'left_margin': 1.0, 'bottom_margin': 1.0,
                       'right_margin': 1.0, 'top_margin': 1.0, 'header': 0.0, 'footer': 0.0, 'gutter': 0.0, 'indent': 1.0}
 
-gradeModel = Grade(rubric, weights, '../../data/', style=style)
+gradeModel = Grade(rubric, weights, style=style)
 if debug:
     print('Ready!')
     
@@ -96,17 +102,25 @@ app.config.from_mapping(
 ALLOWED_EXTENSIONS = app.config['ALLOWED_EXTENSIONS']
 
     
-# Preferences and Email
-# ---------------------
+
 
 @app.route('/updatePreference', methods=['GET', 'POST'])
 def updatePreference():
-   
+    """
+    Updates the preference categories after the user inputs their preferences
+    
+    Returns
+    -------
+    A redirect back to the current webpage
+    """
+   # Define global variables
     global email
     global rubric
     global style
     global weights
     global gradeModel
+    
+    # Store the preferences input
     if request.method == "POST":
         rubric['grammar'] = request.form.get("rubric1")
         rubric['key'] = request.form.get("rubric2")
@@ -140,9 +154,11 @@ def updatePreference():
         style['gutter'] = float(request.form.get("style14"))
         style['indent'] = float(request.form.get("style15"))
         
+        # Cast all values for rubric to an integer 
         for keys in rubric:
             rubric[keys] = int(rubric[keys])
-            
+        
+        # Cast all values for weights to an integer and assign None to all values that are 0.
         for keys in weights:
             weights[keys] = int(weights[keys])
             if keys == 'allowed_mistakes':
@@ -160,17 +176,31 @@ def updatePreference():
             if keys == 'page_max':
                 if weights[keys] == 0:
                     weights[keys] = None
-        for keys in style:
-            if style[keys] == 0 or style[keys] == 0.0:
-                style[keys] = None
         
+        # Assigns None to any style category that has a value of 0, 0.0 or "None"
+        for keys in style:
+            if style[keys] == 0 or style[keys] == 0.0 or style[keys] == "None":
+                style[keys] = None
+                
+        # Updates each category with the values input
         gradeModel.update_rubric(rubric)
         gradeModel.update_weights(weights)
         gradeModel.update_style(style)
+        
     return redirect (url_for('igaResponse'))
+
+
 
 @app.route('/updateEmail', methods=['POST'])
 def updateEmail():
+    """
+    Updates the email after the user inputs their email
+    
+    Returns
+    -------
+    A redirect back to the current webpage
+    """
+    
     global rubric
     global style
     global weights
@@ -178,12 +208,18 @@ def updateEmail():
        email = request.form.get("email")
     return redirect (url_for('igaResponse'))
 
-# File upload processing
-# -----------------------
+
 
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+   """
+       Checks if given file has extension pdf, txt or docx
+       
+       Returns
+       -------
+       True if it does, otherwise returns False
+   """
+   return '.' in filename and \
+          filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -192,6 +228,7 @@ def uploaded_file(filename):
 
 # Error Handling
 # --------------
+
 @app.errorhandler(HTTPException)
 def handle_exception(e):
     """Return JSON instead of HTML for HTTP errors."""
@@ -276,14 +313,18 @@ def results():
         return render_template('no_results.html')
     
 
-# --------------------------------------------------------
-# Main Route processing
-# Performs functionality for GET and POST
-# For POST performs functionality for all Button Presses
-# -----------------------------------------------------------
-    
+
 @app.route('/', methods=['GET', 'POST'])
 def igaResponse():
+    """ 
+     Performs a specific operation based on what button the user has clicked. For evaluate, it displays the grade 
+     feedback, error and evaluation statistics. For Reset, it clears the webpage. For file upload, it displays the
+     content of the file on the screen after upload is clicked.
+
+     Returns
+     --------
+     A redirect back to the current webpage. 
+    """
     global rubric
     global style
     global weights
@@ -314,6 +355,8 @@ def igaResponse():
                filepath = form.uploadFile.data
                filepath = filepath.split(':')
                filepath = filepath[1].lstrip()
+               if " " in filepath:
+                filepath = filepath.replace(" ", "_")
                current_db, current_gd, current_out  = processEvaluateFile(os.path.join('./',(os.path.relpath((os.path.join(app.config['UPLOAD_FOLDER'], filepath))))))
                if current_gd:
                     form.grade.data = current_gd
@@ -391,10 +434,15 @@ def igaResponse():
                 
     return render_template('igaView.html', form=form)
 
-# Get Text from file uploaded to display in Text Area
-# ---------------------------------------------------
+
 
 def getFileText(filepath):
+    """
+    Returns
+    -------
+    The text from the file uploaded to the website
+    """
+    
     f = filepath.split('.')
     # File must be a docx or doc
     if f[len(f) - 1] == "docx" or f[len(f) - 1] == "doc":
@@ -427,10 +475,16 @@ def getFileText(filepath):
                 print(e)
             return None
 
-# Evaluates File for grading
-# ---------------------------    
-    
+
 def processEvaluateFile(filepath):
+    """
+     Evaluates file for grading
+     
+     Returns
+     -------
+     The debug, grade and output for the essay 
+    """
+    
     global gradeModel
     if filepath:
         try:
@@ -443,10 +497,17 @@ def processEvaluateFile(filepath):
     else:
        return None, None, None
 
-# Evaluates Input Essay for Grading
-# ---------------------------------
+
     
 def processEvaluateTextEssay(essay):
+    """
+     Evaluates input essay for grading
+     
+     Returns
+     -------
+     The debug, grade and output for the essay 
+    """
+
     global gradeModel
     if essay:
         try:
@@ -460,10 +521,17 @@ def processEvaluateTextEssay(essay):
        return None, None, None
 
 
-# Splits the error into information and error and formats the error returned after evaluation for display
-# -------------------------------------------------------
+
     
 def formatError(error):
+    """
+     Splits the error into information and error and formats the error returned after evaluation for display
+     
+     Returns
+     -------
+     The error and evaluation statistics
+    """
+
     
     split = error.splitlines()
     list_of_tuples = ast.literal_eval(split[1])
@@ -478,8 +546,7 @@ def formatError(error):
     
     for i in split[2:]:
        infoParts = i.split(":") 
-       information = information + i + '\n'
-       #information = information + '{:30s} {:s} {:s} {:s})'.format(infoParts[0], " :", infoParts[1], "\n")       
+       information = information + i + '\n'    
     return error, information
 
 
