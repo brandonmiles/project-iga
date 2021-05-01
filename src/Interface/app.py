@@ -11,6 +11,7 @@
 #-------------
 
 from flask import Flask, request, render_template, flash, redirect, url_for
+sys.path.insert(0, '../')
 import os
 import os.path
 from werkzeug.utils import secure_filename
