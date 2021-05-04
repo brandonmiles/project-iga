@@ -82,18 +82,17 @@ email = ''
 
 # Initialize rubric, weights and style dictionaries with default values
 # -------------------------------
-rubric = {'grammar': 5, 'key': 5, 'length': 5, 'format': 5, 'model': 5, 'reference': 5}
+rubric = {'grammar': 20, 'key': 10, 'length': 20, 'format': 20, 'model': 20, 'reference': 10}
 # How easily or hard it is to lose points from each sections, use None to chose between word count and page count
-weights = {'grammar': 1, 'allowed_mistakes': 3, 'key_max': 3, 'key_min': 0, 'word_min': 300, 'word_max': 800,
+weights = {'grammar': 1, 'allowed_mistakes': 3, 'key_max': 3, 'key_min': 0, 'word_min': 200, 'word_max': 500,
            'page_min': 1, 'page_max': 4, 'format': 5, 'reference': 5}
-  # List of allowable fonts
-allowed_fonts = ["Times New Roman", "Calibri Math"]
 # Expected format of the word document, use None to denote a non-graded format criteria
-style = {'font': allowed_fonts, 'size': 12, 'line_spacing': 2.0, 'after_spacing': 0.0,
+style = {'font': "Times New Roman", 'size': 12, 'line_spacing': 2.0, 'after_spacing': 0.0,
                       'before_spacing': 0.0, 'page_width': 8.5, 'page_height': 11, 'left_margin': 1.0, 'bottom_margin': 1.0,
                       'right_margin': 1.0, 'top_margin': 1.0, 'header': 0.0, 'footer': 0.0, 'gutter': 0.0, 'indent': 1.0}
 
-gradeModel = Grade(rubric, weights, style=style)
+start = "./data/"
+gradeModel = Grade(rubric, weights, start, style=style)
 if debug:
     print('Ready!')
     
